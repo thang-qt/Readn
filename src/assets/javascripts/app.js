@@ -244,6 +244,7 @@ var vm = new Vue({
         'items': false,
         'readability': false,
         'summary': false,
+        'chat': false,
       },
       'fonts': ['', 'serif', 'monospace'],
       'feedStats': {},
@@ -260,6 +261,9 @@ var vm = new Vue({
       'authenticated': app.authenticated,
       'feed_errors': {},
       'sidebarCollapsed': s.sidebar_collapsed,
+      'chatPanelVisible': false,
+      'chatMessages': [],
+      'chatInput': '',
     }
   },
   computed: {
@@ -401,6 +405,32 @@ var vm = new Vue({
     'sidebarCollapsed': function(newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
       api.settings.update({sidebar_collapsed: newVal})
+    },
+    'itemSelected': function(newVal, oldVal) {
+      this.itemSelectedReadability = ''
+      this.itemSelectedSummary = ''
+      this.summaryError = ''
+      // Clear chat when switching articles
+      if (oldVal !== undefined && newVal !== oldVal) {
+        this.chatMessages = []
+      }
+      if (newVal === null) {
+        this.itemSelectedDetails = null
+        return
+      }
+      if (this.$refs.content) this.$refs.content.scrollTop = 0
+
+      api.items.get(newVal).then(function(item) {
+        vm.itemSelectedDetails = item
+        if (vm.itemSelectedDetails.status == 'unread') {
+          api.items.update(vm.itemSelectedDetails.id, {status: 'read'}).then(function() {
+            vm.feedStats[vm.itemSelectedDetails.feed_id].unread -= 1
+            var itemInList = vm.items.find(function(i) { return i.id == item.id })
+            if (itemInList) itemInList.status = 'read'
+            vm.itemSelectedDetails.status = 'read'
+          })
+        }
+      })
     },
     'apiKey': function(newVal, oldVal) {
       if (oldVal === undefined) return
@@ -727,6 +757,84 @@ var vm = new Vue({
     updateAIPrompt: function(value) {
       this.aiPrompt = value
       api.settings.update({ai_prompt: value})
+    },
+    toggleChatPanel: function() {
+      this.chatPanelVisible = !this.chatPanelVisible
+      if (this.chatPanelVisible && this.chatMessages.length === 0) {
+        // Clear chat when opening panel
+        this.clearChat()
+      }
+      if (this.chatPanelVisible) {
+        this.$nextTick(function() {
+          var chatContainer = vm.$refs.chatContainer
+          if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight
+          }
+        })
+      }
+    },
+    sendChatMessage: function() {
+      if (!this.chatInput.trim() || this.loading.chat || !this.itemSelectedDetails) return
+      
+      var userMessage = {
+        role: 'user',
+        content: this.chatInput.trim()
+      }
+      
+      this.chatMessages.push(userMessage)
+      var messages = this.chatMessages.slice() // Copy for API call
+      this.chatInput = ''
+      this.loading.chat = true
+      
+      var item = this.itemSelectedDetails
+      var content = this.itemSelectedReadability || item.content || ''
+      
+      this.$nextTick(function() {
+        var chatContainer = vm.$refs.chatContainer
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight
+        }
+      })
+      
+      api.chat(messages, item.title, content).then(function(data) {
+        vm.loading.chat = false
+        if (data.error) {
+          vm.chatMessages.push({
+            role: 'assistant',
+            content: 'Sorry, I encountered an error: ' + data.error
+          })
+        } else {
+          vm.chatMessages.push({
+            role: 'assistant',
+            content: data.response
+          })
+        }
+        vm.$nextTick(function() {
+          var chatContainer = vm.$refs.chatContainer
+          if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight
+          }
+        })
+      }).catch(function(error) {
+        vm.loading.chat = false
+        vm.chatMessages.push({
+          role: 'assistant',
+          content: 'Sorry, I encountered an error: ' + error.message
+        })
+        vm.$nextTick(function() {
+          var chatContainer = vm.$refs.chatContainer
+          if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight
+          }
+        })
+      })
+    },
+    clearChat: function() {
+      this.chatMessages = []
+    },
+    formatChatMessage: function(message) {
+      // Basic text formatting for chat messages
+      return message.replace(/\n/g, '<br>')
     },
     showSettings: function(settings) {
       this.settings = settings

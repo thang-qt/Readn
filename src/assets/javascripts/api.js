@@ -109,6 +109,12 @@
     },
     summarize: function(content, title) {
       return api('post', './api/summarize', { content: content, title: title }).then(json)
+    },
+    chat: function(messages, title, content) {
+      return api('post', './api/chat', { 
+        messages: messages, 
+        context: { title: title, content: content }
+      }).then(json)
     }
   }
 })()

@@ -60,6 +60,7 @@ func (s *Server) handler() http.Handler {
 	r.For("/opml/export", s.handleOPMLExport)
 	r.For("/page", s.handlePageCrawl)
 	r.For("/api/summarize", s.handleSummarize)
+	r.For("/api/chat", s.handleChat)
 	r.For("/logout", s.handleLogout)
 	r.For("/fever/", s.handleFever)
 
@@ -599,6 +600,138 @@ func (s *Server) callOpenAISummarize(content, title string) (string, error) {
 		},
 		"max_tokens":   200,
 		"temperature":  0.3,
+		"stream":      false,
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var response struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", err
+	}
+
+	if len(response.Choices) == 0 {
+		return "", fmt.Errorf("no response from API")
+	}
+
+	return response.Choices[0].Message.Content, nil
+}
+
+func (s *Server) handleChat(c *router.Context) {
+	var req struct {
+		Messages []struct {
+			Role    string `json:"role"`
+			Content string `json:"content"`
+		} `json:"messages"`
+		Context struct {
+			Title   string `json:"title"`
+			Content string `json:"content"`
+		} `json:"context"`
+	}
+
+	if err := json.NewDecoder(c.Req.Body).Decode(&req); err != nil {
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "Invalid JSON payload",
+		})
+		return
+	}
+
+	if len(req.Messages) == 0 {
+		c.JSON(http.StatusBadRequest, map[string]interface{}{
+			"error": "No messages provided",
+		})
+		return
+	}
+
+	response, err := s.callOpenAIChat(req.Messages, req.Context.Title, req.Context.Content)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, map[string]interface{}{
+			"error": err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"response": response,
+	})
+}
+
+func (s *Server) callOpenAIChat(messages []struct {
+	Role    string `json:"role"`
+	Content string `json:"content"`
+}, title, content string) (string, error) {
+	apiKey := s.db.GetAIAPIKey()
+	if apiKey == "" {
+		return "", fmt.Errorf("API key not configured")
+	}
+
+	apiURL := s.db.GetAIAPIURL()
+	model := s.db.GetAIModel()
+
+	// Prepare context system message
+	contextMessage := "You are a helpful assistant discussing an article. Use the following article as context for the conversation.\n\n"
+	if title != "" {
+		contextMessage += fmt.Sprintf("Title: %s\n\n", title)
+	}
+	if content != "" {
+		contextMessage += fmt.Sprintf("Content: %s", content)
+	}
+
+	// Build the message chain with context
+	chatMessages := []map[string]interface{}{
+		{
+			"role":    "system",
+			"content": contextMessage,
+		},
+	}
+
+	// Add conversation messages
+	for _, msg := range messages {
+		chatMessages = append(chatMessages, map[string]interface{}{
+			"role":    msg.Role,
+			"content": msg.Content,
+		})
+	}
+
+	requestData := map[string]interface{}{
+		"model":       model,
+		"messages":    chatMessages,
+		"max_tokens":  500,
+		"temperature": 0.7,
 		"stream":      false,
 	}
 

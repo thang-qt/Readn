@@ -482,6 +482,23 @@ a,
   margin-left: 2px;
 }
 
+.toolbar-item.chat-button {
+  margin-left: 2px;
+}
+
+#chat-panel {
+  background-color: #fff;
+}
+
+#chat-panel .bg-primary {
+  background-color: #007bff !important;
+}
+
+#chat-panel .form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
 .btn-default:focus,
 .form-control:focus {
   border-color: #0080d4;

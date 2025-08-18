@@ -305,9 +305,11 @@
                 {{ feed_errors[current.feed.id] }}
             </div>
         </div>
-        <!-- item show -->
-        <div id="col-item" class="vh-100 d-flex flex-column w-100" style="min-width: 0;">
-            <div class="toolbar px-2 d-flex align-items-center" v-if="itemSelectedDetails">
+        <!-- main content area with chat -->
+        <div class="vh-100 d-flex w-100" style="min-width: 0;">
+            <!-- item show -->
+            <div id="col-item" class="d-flex flex-column flex-grow-1" style="min-width: 0;">
+                <div class="toolbar px-2 d-flex align-items-center" v-if="itemSelectedDetails">
                 <button class="toolbar-item"
                         @click="toggleItemStarred(itemSelectedDetails)"
                         title="Mark Starred">
@@ -346,6 +348,12 @@
                         title="TL;DR">
                     <span class="icon" :class="{'icon-loading': loading.summary}">{% inline "scissors.svg" %}</span>
                 </button>
+                <button class="toolbar-item chat-button"
+                        :class="{active: chatPanelVisible}"
+                        @click="toggleChatPanel()"
+                        title="AI Chat">
+                    <span class="icon" :class="{'icon-loading': loading.chat}">{% inline "message-circle.svg" %}</span>
+                </button>
                 <a class="toolbar-item" :href="itemSelectedDetails.link" rel="noopener noreferrer" target="_blank" referrerpolicy="no-referrer" title="Open Link">
                     <span class="icon">{% inline "external-link.svg" %}</span>
                 </a>
@@ -362,7 +370,7 @@
             </div>
             <div v-if="itemSelectedDetails"
                  ref="content"
-                 class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch"
+                 class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1"
                  :class="{'font-serif': theme.font == 'serif', 'font-monospace': theme.font == 'monospace'}"
                  :style="{'font-size': theme.size + 'rem'}">
                 <div class="content-wrapper">
@@ -397,6 +405,63 @@
                     <div v-html="itemSelectedContent"></div>
                 </div>
             </div>
+            </div>
+            <!-- chat panel -->
+            <div id="chat-panel" class="vh-100 border-left flex-shrink-0" v-if="chatPanelVisible" style="width: 350px;">
+            <div class="d-flex flex-column h-100">
+                <div class="toolbar px-2 d-flex align-items-center border-bottom">
+                    <span class="h6 mb-0">AI Chat</span>
+                    <button class="btn btn-link p-0 ml-auto" @click="clearChat()" title="Clear Chat" v-if="chatMessages.length > 0">
+                        <span class="icon">{% inline "trash.svg" %}</span>
+                    </button>
+                    <button class="btn btn-link p-0 ml-2" @click="chatPanelVisible = false" title="Close Chat">
+                        <span class="icon">{% inline "x.svg" %}</span>
+                    </button>
+                </div>
+                <div class="flex-grow-1 overflow-auto scroll-touch p-2" ref="chatContainer">
+                    <div v-if="chatMessages.length === 0" class="text-muted text-center py-4">
+                        <p>Start a conversation about this article!</p>
+                        <p><small>Ask questions, request analysis, or discuss key points.</small></p>
+                    </div>
+                    <div v-for="(message, index) in chatMessages" :key="index" class="mb-3">
+                        <div v-if="message.role === 'user'" class="d-flex justify-content-end">
+                            <div class="bg-primary text-white px-3 py-2 rounded" style="max-width: 80%;">
+                                <small class="d-block opacity-75 mb-1">You</small>
+                                <div>{{ message.content }}</div>
+                            </div>
+                        </div>
+                        <div v-else class="d-flex justify-content-start">
+                            <div class="bg-light px-3 py-2 rounded border" style="max-width: 80%;">
+                                <small class="d-block text-muted mb-1">AI Assistant</small>
+                                <div v-html="formatChatMessage(message.content)"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div v-if="loading.chat" class="d-flex justify-content-start mb-3">
+                        <div class="bg-light px-3 py-2 rounded border" style="max-width: 80%;">
+                            <small class="d-block text-muted mb-1">AI Assistant</small>
+                            <div class="loading">Thinking...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="border-top p-2">
+                    <form @submit.prevent="sendChatMessage()" class="d-flex">
+                        <input type="text" 
+                               v-model="chatInput" 
+                               class="form-control flex-grow-1" 
+                               placeholder="Ask about this article..." 
+                               :disabled="loading.chat || !itemSelectedDetails"
+                               maxlength="500">
+                        <button type="submit" 
+                                class="btn btn-primary ml-2" 
+                                :disabled="!chatInput.trim() || loading.chat || !itemSelectedDetails">
+                            <span class="icon" v-if="!loading.chat">{% inline "send.svg" %}</span>
+                            <span class="icon icon-loading" v-else></span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
         </div>
         <modal :open="!!settings" @hide="settings = ''">
             <button class="btn btn-link outline-none float-right p-2 mr-n2 mt-n2" style="line-height: 1" @click="settings = ''">
