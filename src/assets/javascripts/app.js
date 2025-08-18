@@ -258,6 +258,7 @@ var vm = new Vue({
       'aiModel': s.ai_model || 'gpt-4o-mini',
       'authenticated': app.authenticated,
       'feed_errors': {},
+      'sidebarCollapsed': s.sidebar_collapsed || false,
     }
   },
   computed: {
@@ -395,6 +396,10 @@ var vm = new Vue({
     'refreshRate': function(newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
       api.settings.update({refresh_rate: newVal})
+    },
+    'sidebarCollapsed': function(newVal, oldVal) {
+      if (oldVal === undefined) return  // do nothing, initial setup
+      api.settings.update({sidebar_collapsed: newVal})
     },
     'apiKey': function(newVal, oldVal) {
       if (oldVal === undefined) return
@@ -831,6 +836,9 @@ var vm = new Vue({
 
         if (target && scroll) scrollto(target, scroll)
       })
+    },
+    toggleSidebarCollapsed: function() {
+      this.sidebarCollapsed = !this.sidebarCollapsed
     },
   }
 })

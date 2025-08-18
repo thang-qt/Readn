@@ -16,12 +16,16 @@
     </script>
 </head>
 <body class="theme-{% .settings.theme_name %}">
-    <div id="app" class="d-flex" :class="{'feed-selected': feedSelected !== null, 'item-selected': itemSelected !== null}" v-cloak>
+    <div id="app" class="d-flex" :class="{'feed-selected': feedSelected !== null, 'item-selected': itemSelected !== null, 'sidebar-collapsed': sidebarCollapsed}" v-cloak>
         <!-- feed list -->
         <div id="col-feed-list" class="vh-100 position-relative d-flex flex-column border-right flex-shrink-0" :style="{width: feedListWidth+'px'}">
             <drag :width="feedListWidth" @resize="resizeFeedList"></drag>
             <div class="p-2 toolbar d-flex align-items-center">
                 <div class="icon mx-2">{% inline "anchor.svg" %}</div>
+                <button class="toolbar-item sidebar-toggle ml-2" @click="toggleSidebarCollapsed" title="Toggle Sidebar">
+                    <span class="icon" v-if="!sidebarCollapsed">{% inline "chevron-left.svg" %}</span>
+                    <span class="icon" v-else>{% inline "chevron-right.svg" %}</span>
+                </button>
                 <div class="flex-grow-1"></div>
                 <button class="toolbar-item"
                         :class="{active: filterSelected == 'unread'}"
@@ -450,6 +454,7 @@
                 <table class="table table-borderless table-sm table-compact m-0">
                     <tr><td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td>
                                                             <td>show unread / starred / all feeds</td></tr>
+                    <tr><td><kbd>t</kbd></td>               <td>toggle sidebar</td></tr>
                     <tr><td><kbd>/</kbd></td>               <td>focus the search bar</td></tr>
 
                     <tr><td colspan=2>&nbsp;</td></tr>

@@ -69,6 +69,9 @@ var shortcutFunctions = {
   showStarred() {
     vm.filterSelected = 'starred'
   },
+  toggleSidebar() {
+    vm.toggleSidebarCollapsed()
+  },
 }
 
 // If you edit, make sure you update the help modal
@@ -88,6 +91,7 @@ var keybindings = {
   "1": shortcutFunctions.showUnread,
   "2": shortcutFunctions.showStarred,
   "3": shortcutFunctions.showAll,
+  "t": shortcutFunctions.toggleSidebar,
 }
 
 var codebindings = {
@@ -106,6 +110,7 @@ var codebindings = {
   "Digit1": shortcutFunctions.showUnread,
   "Digit2": shortcutFunctions.showStarred,
   "Digit3": shortcutFunctions.showAll,
+  "KeyT": shortcutFunctions.toggleSidebar,
 }
 
 function isTextBox(element) {
