@@ -499,6 +499,47 @@ a,
   box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
 }
 
+/* Chat message markdown styling */
+#chat-panel p {
+  margin-bottom: 0.5rem;
+}
+
+#chat-panel p:last-child {
+  margin-bottom: 0;
+}
+
+#chat-panel code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 0.125rem 0.25rem;
+  border-radius: 0.25rem;
+  font-size: 0.875em;
+}
+
+#chat-panel pre {
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 0.5rem;
+  border-radius: 0.25rem;
+  overflow-x: auto;
+  font-size: 0.875em;
+}
+
+#chat-panel pre code {
+  background-color: transparent;
+  padding: 0;
+}
+
+#chat-panel ul, #chat-panel ol {
+  margin-bottom: 0.5rem;
+  padding-left: 1.5rem;
+}
+
+#chat-panel blockquote {
+  border-left: 3px solid #007bff;
+  padding-left: 1rem;
+  margin-left: 0;
+  color: #6c757d;
+}
+
 .btn-default:focus,
 .form-control:focus {
   border-color: #0080d4;

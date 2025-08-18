@@ -833,8 +833,17 @@ var vm = new Vue({
       this.chatMessages = []
     },
     formatChatMessage: function(message) {
-      // Basic text formatting for chat messages
-      return message.replace(/\n/g, '<br>')
+      // Use marked.js to render markdown
+      if (typeof marked !== 'undefined') {
+        // Convert literal \n strings to actual line breaks for markdown processing
+        var processedMessage = message.replace(/\\n/g, '\n')
+        // For markdown, we need double line breaks for paragraphs, single for line breaks
+        // Replace single \n with double space + \n (markdown line break)
+        processedMessage = processedMessage.replace(/\n(?!\n)/g, '  \n')
+        return marked.parse(processedMessage)
+      }
+      // Fallback to basic formatting
+      return message.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')
     },
     showSettings: function(settings) {
       this.settings = settings
