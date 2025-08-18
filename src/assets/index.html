@@ -22,10 +22,6 @@
             <drag :width="feedListWidth" @resize="resizeFeedList"></drag>
             <div class="p-2 toolbar d-flex align-items-center">
                 <div class="icon mx-2">{% inline "anchor.svg" %}</div>
-                <button class="toolbar-item sidebar-toggle ml-2" @click="toggleSidebarCollapsed" title="Toggle Sidebar">
-                    <span class="icon" v-if="!sidebarCollapsed">{% inline "chevron-left.svg" %}</span>
-                    <span class="icon" v-else>{% inline "chevron-right.svg" %}</span>
-                </button>
                 <div class="flex-grow-1"></div>
                 <button class="toolbar-item"
                         :class="{active: filterSelected == 'unread'}"
@@ -147,6 +143,10 @@
                         Log out
                     </button>
                 </dropdown>
+                <button class="toolbar-item sidebar-toggle" @click="toggleSidebarCollapsed" title="Toggle Sidebar">
+                    <span class="icon" v-if="!sidebarCollapsed">{% inline "chevron-left.svg" %}</span>
+                    <span class="icon" v-else>{% inline "chevron-right.svg" %}</span>
+                </button>
             </div>
             <div id="feed-list-scroll" class="p-2 overflow-auto scroll-touch border-top flex-grow-1">
                 <label class="selectgroup">

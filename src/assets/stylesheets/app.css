@@ -543,10 +543,6 @@ a,
   display: none;
 }
 
-#app.sidebar-collapsed #col-feed-list #feed-list-scroll {
-  display: none;
-}
-
 #app.sidebar-collapsed #col-feed-list .toolbar .flex-grow-1,
 #app.sidebar-collapsed #col-feed-list .toolbar .toolbar-item:not(.sidebar-toggle),
 #app.sidebar-collapsed #col-feed-list .toolbar .settings-dropdown {
@@ -560,8 +556,8 @@ a,
   gap: .5rem;
 }
 
-#app.sidebar-collapsed #col-feed-list .toolbar .sidebar-toggle {
-  margin-left: 0 !important;
+#app.sidebar-collapsed #col-feed-list #feed-list-scroll {
+  display: none;
 }
 
 /* responsive layout
