@@ -258,7 +258,7 @@ var vm = new Vue({
       'aiModel': s.ai_model || 'gpt-4o-mini',
       'authenticated': app.authenticated,
       'feed_errors': {},
-      'sidebarCollapsed': s.sidebar_collapsed || false,
+      'sidebarCollapsed': s.sidebar_collapsed,
     }
   },
   computed: {

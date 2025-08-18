@@ -16,6 +16,7 @@ func settingsDefaults() map[string]interface{} {
 		"theme_font":        "",
 		"theme_size":        1,
 		"refresh_rate":      0,
+		"sidebar_collapsed": false,
 		"ai_api_key":        "",
 		"ai_api_url":        "https://api.aimlapi.com/v1/chat/completions",
 		"ai_model":          "gpt-4o-mini",
