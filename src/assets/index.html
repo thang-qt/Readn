@@ -357,11 +357,11 @@
                         title="Read Here">
                     <span class="icon" :class="{'icon-loading': loading.readability}">{% inline "book-open.svg" %}</span>
                 </button>
-                <button class="toolbar-item"
+                <button class="toolbar-item tldr-button"
                         :class="{active: itemSelectedSummary}"
                         @click="toggleSummary()"
                         title="TL;DR">
-                    <span class="icon" :class="{'icon-loading': loading.summary}">{% inline "layers.svg" %}</span>
+                    <span class="icon" :class="{'icon-loading': loading.summary}">{% inline "scissors.svg" %}</span>
                 </button>
                 <a class="toolbar-item" :href="itemSelectedDetails.link" rel="noopener noreferrer" target="_blank" referrerpolicy="no-referrer" title="Open Link">
                     <span class="icon">{% inline "external-link.svg" %}</span>

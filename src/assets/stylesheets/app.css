@@ -458,6 +458,10 @@ a,
   background-color: #0080d4 !important;
 }
 
+.toolbar-item.tldr-button {
+  margin-left: 2px;
+}
+
 .btn-default:focus,
 .form-control:focus {
   border-color: #0080d4;
