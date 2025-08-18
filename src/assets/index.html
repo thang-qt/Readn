@@ -94,27 +94,10 @@
                         <button class="dropdown-item px-0" :aria-pressed="!itemSortNewestFirst" :class="{active: !itemSortNewestFirst}" @click.stop="itemSortNewestFirst=false">Old</button>
                     </div>
                     <div class="dropdown-divider"></div>
-                    <header class="dropdown-header" role="heading" aria-level="2">AI Settings</header>
-                    <div class="px-3 py-2">
-                        <input type="password"
-                               class="form-control form-control-sm mb-2"
-                               placeholder="AI API Key"
-                               :value="aiKey"
-                               @input="updateAIKey($event.target.value)"
-                               title="Enter your API key to enable AI features">
-                        <input type="url"
-                               class="form-control form-control-sm mb-2"
-                               placeholder="AI API URL"
-                               :value="aiURL"
-                               @input="updateAIURL($event.target.value)"
-                               title="AI API endpoint URL (default: aimlapi.com)">
-                        <input type="text"
-                               class="form-control form-control-sm"
-                               placeholder="AI Model (e.g. gpt-4o-mini)"
-                               :value="aiModel"
-                               @input="updateAIModel($event.target.value)"
-                               title="AI model to use for summaries">
-                    </div>
+                    <button class="dropdown-item" @click="showSettings('settings')">
+                        <span class="icon mr-1">{% inline "sliders.svg" %}</span>
+                        Settings
+                    </button>
                     <div class="dropdown-divider"></div>
                     <header class="dropdown-header" role="heading" aria-level="2">Subscriptions</header>
                     <form id="opml-import-form" enctype="multipart/form-data" tabindex="-1">
@@ -470,6 +453,54 @@
                     <tr><td><kbd>f</kbd> <kbd>b</kbd></td>  <td>scroll content forward / backward</td>
                     </tr>
                 </table>
+            </div>
+            <div v-else-if="settings=='settings'">
+                <p class="cursor-default"><b>Settings</b></p>
+                
+                <div class="mt-4">
+                    <h5>AI Settings</h5>
+                    <div class="form-group">
+                        <label for="ai-api-key">AI API Key</label>
+                        <input type="password"
+                               id="ai-api-key"
+                               class="form-control"
+                               placeholder="Enter your API key"
+                               :value="aiKey"
+                               @input="updateAIKey($event.target.value)"
+                               title="Enter your API key to enable AI features">
+                    </div>
+                    <div class="form-group">
+                        <label for="ai-api-url">AI API URL</label>
+                        <input type="url"
+                               id="ai-api-url"
+                               class="form-control"
+                               placeholder="https://api.aimlapi.com/v1/chat/completions"
+                               :value="aiURL"
+                               @input="updateAIURL($event.target.value)"
+                               title="AI API endpoint URL (default: aimlapi.com)">
+                    </div>
+                    <div class="form-group">
+                        <label for="ai-model">AI Model</label>
+                        <input type="text"
+                               id="ai-model"
+                               class="form-control"
+                               placeholder="gpt-4o-mini"
+                               :value="aiModel"
+                               @input="updateAIModel($event.target.value)"
+                               title="AI model to use for summaries">
+                    </div>
+                    <div class="form-group">
+                        <label for="ai-prompt">AI Summary Prompt</label>
+                        <textarea id="ai-prompt"
+                                  class="form-control"
+                                  rows="3"
+                                  placeholder="Customize the prompt sent to AI for summarization"
+                                  :value="aiPrompt"
+                                  @input="updateAIPrompt($event.target.value)"
+                                  title="Custom prompt template for AI summarization"></textarea>
+                        <small class="form-text text-muted">This prompt will be sent to the AI before the article content for summarization.</small>
+                    </div>
+                </div>
             </div>
         </modal>
     </div>

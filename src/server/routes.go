@@ -581,15 +581,16 @@ func (s *Server) callOpenAISummarize(content, title string) (string, error) {
 
 	apiURL := s.db.GetAIAPIURL()
 	model := s.db.GetAIModel()
+	aiPrompt := s.db.GetAIPrompt()
 
-	prompt := fmt.Sprintf("Please provide a concise summary (TL;DR) of the following article:\n\nTitle: %s\n\nContent: %s", title, content)
+	prompt := fmt.Sprintf("%s\n\nTitle: %s\n\nContent: %s", aiPrompt, title, content)
 
 	requestData := map[string]interface{}{
 		"model": model,
 		"messages": []map[string]interface{}{
 			{
 				"role":    "system",
-				"content": "You are a helpful assistant that provides concise summaries of articles. Keep summaries between 2-4 sentences, highlighting the key points.",
+				"content": "You are a helpful assistant that summarizes articles based on user instructions. Return only the summary content itself, without any preamble, headers, or additional text.",
 			},
 			{
 				"role":    "user",

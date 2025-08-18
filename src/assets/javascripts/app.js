@@ -256,6 +256,7 @@ var vm = new Vue({
       'aiKey': s.ai_api_key || '',
       'aiURL': s.ai_api_url || 'https://api.aimlapi.com/v1/chat/completions',
       'aiModel': s.ai_model || 'gpt-4o-mini',
+      'aiPrompt': s.ai_prompt || 'Please provide a concise summary (TL;DR) of the following article. Keep summaries between 2-4 sentences, highlighting the key points and important details:',
       'authenticated': app.authenticated,
       'feed_errors': {},
       'sidebarCollapsed': s.sidebar_collapsed,
@@ -722,6 +723,10 @@ var vm = new Vue({
     updateAIModel: function(value) {
       this.aiModel = value
       api.settings.update({ai_model: value})
+    },
+    updateAIPrompt: function(value) {
+      this.aiPrompt = value
+      api.settings.update({ai_prompt: value})
     },
     showSettings: function(settings) {
       this.settings = settings

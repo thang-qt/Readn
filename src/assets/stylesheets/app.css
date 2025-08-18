@@ -350,9 +350,29 @@ select.form-control:not([multiple]):not([size]) {
 }
 
 .custom-modal {
-  background-color: rgba(0, 0, 0, 0.9);
+  background-color: rgba(0, 0, 0, 0.7);
   overflow-y: auto;
-  display: block !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+}
+
+.custom-modal .modal-dialog {
+  margin: 1rem;
+  max-width: 500px;
+  width: 100%;
+  max-height: calc(100vh - 2rem);
+}
+
+.custom-modal .modal-content {
+  border-radius: 8px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 }
 
 /* content */

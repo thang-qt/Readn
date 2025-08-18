@@ -126,3 +126,13 @@ func (s *Storage) GetAIModel() string {
 	}
 	return "gpt-4o-mini"
 }
+
+func (s *Storage) GetAIPrompt() string {
+	val := s.GetSettingsValue("ai_prompt")
+	if val != nil {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return "Please provide a concise summary (TL;DR) of the following article. Keep summaries between 2-4 sentences, highlighting the key points and important details:"
+}
