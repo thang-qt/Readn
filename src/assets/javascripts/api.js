@@ -106,6 +106,9 @@
     },
     crawl: function(url) {
       return api('get', './page?url=' + encodeURIComponent(url)).then(json)
+    },
+    summarize: function(content, title) {
+      return api('post', './api/summarize', { content: content, title: title }).then(json)
     }
   }
 })()

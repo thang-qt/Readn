@@ -1,9 +1,11 @@
 package server
 
 import (
+	"bytes"
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"path/filepath"
@@ -57,6 +59,7 @@ func (s *Server) handler() http.Handler {
 	r.For("/opml/import", s.handleOPMLImport)
 	r.For("/opml/export", s.handleOPMLExport)
 	r.For("/page", s.handlePageCrawl)
+	r.For("/api/summarize", s.handleSummarize)
 	r.For("/logout", s.handleLogout)
 	r.For("/fever/", s.handleFever)
 
@@ -531,6 +534,119 @@ func (s *Server) handlePageCrawl(c *router.Context) {
 	c.JSON(http.StatusOK, map[string]string{
 		"content": content,
 	})
+}
+
+func (s *Server) handleSummarize(c *router.Context) {
+	if c.Req.Method != http.MethodPost {
+		c.Out.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var requestBody struct {
+		Content string `json:"content"`
+		Title   string `json:"title"`
+	}
+
+	if err := json.NewDecoder(c.Req.Body).Decode(&requestBody); err != nil {
+		log.Print("Error decoding request body:", err)
+		c.Out.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	if requestBody.Content == "" {
+		c.Out.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Call OpenAI API for summarization
+	summary, err := s.callOpenAISummarize(requestBody.Content, requestBody.Title)
+	if err != nil {
+		log.Print("Error calling OpenAI API:", err)
+		c.JSON(http.StatusOK, map[string]interface{}{
+			"error": "Failed to generate summary: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"summary": summary,
+	})
+}
+
+func (s *Server) callOpenAISummarize(content, title string) (string, error) {
+	apiKey := s.db.GetAIAPIKey()
+	if apiKey == "" {
+		return "", fmt.Errorf("API key not configured")
+	}
+
+	apiURL := s.db.GetAIAPIURL()
+	model := s.db.GetAIModel()
+
+	prompt := fmt.Sprintf("Please provide a concise summary (TL;DR) of the following article:\n\nTitle: %s\n\nContent: %s", title, content)
+
+	requestData := map[string]interface{}{
+		"model": model,
+		"messages": []map[string]interface{}{
+			{
+				"role":    "system",
+				"content": "You are a helpful assistant that provides concise summaries of articles. Keep summaries between 2-4 sentences, highlighting the key points.",
+			},
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+		"max_tokens":   200,
+		"temperature":  0.3,
+		"stream":      false,
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var response struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", err
+	}
+
+	if len(response.Choices) == 0 {
+		return "", fmt.Errorf("no response from API")
+	}
+
+	return response.Choices[0].Message.Content, nil
 }
 
 func (s *Server) handleLogout(c *router.Context) {

@@ -94,6 +94,28 @@
                         <button class="dropdown-item px-0" :aria-pressed="!itemSortNewestFirst" :class="{active: !itemSortNewestFirst}" @click.stop="itemSortNewestFirst=false">Old</button>
                     </div>
                     <div class="dropdown-divider"></div>
+                    <header class="dropdown-header" role="heading" aria-level="2">AI Settings</header>
+                    <div class="px-3 py-2">
+                        <input type="password"
+                               class="form-control form-control-sm mb-2"
+                               placeholder="AI API Key"
+                               :value="aiKey"
+                               @input="updateAIKey($event.target.value)"
+                               title="Enter your API key to enable AI features">
+                        <input type="url"
+                               class="form-control form-control-sm mb-2"
+                               placeholder="AI API URL"
+                               :value="aiURL"
+                               @input="updateAIURL($event.target.value)"
+                               title="AI API endpoint URL (default: aimlapi.com)">
+                        <input type="text"
+                               class="form-control form-control-sm"
+                               placeholder="AI Model (e.g. gpt-4o-mini)"
+                               :value="aiModel"
+                               @input="updateAIModel($event.target.value)"
+                               title="AI model to use for summaries">
+                    </div>
+                    <div class="dropdown-divider"></div>
                     <header class="dropdown-header" role="heading" aria-level="2">Subscriptions</header>
                     <form id="opml-import-form" enctype="multipart/form-data" tabindex="-1">
                         <input type="file"
@@ -331,6 +353,12 @@
                         title="Read Here">
                     <span class="icon" :class="{'icon-loading': loading.readability}">{% inline "book-open.svg" %}</span>
                 </button>
+                <button class="toolbar-item"
+                        :class="{active: itemSelectedSummary}"
+                        @click="toggleSummary()"
+                        title="TL;DR">
+                    <span class="icon" :class="{'icon-loading': loading.summary}">{% inline "layers.svg" %}</span>
+                </button>
                 <a class="toolbar-item" :href="itemSelectedDetails.link" rel="noopener noreferrer" target="_blank" referrerpolicy="no-referrer" title="Open Link">
                     <span class="icon">{% inline "external-link.svg" %}</span>
                 </a>
@@ -359,6 +387,14 @@
                             </span>
                         </div>
                         <time>{{ formatDate(itemSelectedDetails.date) }}</time>
+                    </div>
+                    <div v-if="itemSelectedSummary && !summaryError" class="summary-card mt-3 mb-3 p-3 border rounded bg-light">
+                        <h5 class="mb-2"><strong>TL;DR</strong></h5>
+                        <p class="mb-0">{{ itemSelectedSummary }}</p>
+                    </div>
+                    <div v-if="summaryError" class="summary-error mt-3 mb-3 p-3 border rounded bg-danger text-white">
+                        <h5 class="mb-2"><strong>TL;DR Error</strong></h5>
+                        <p class="mb-0">{{ summaryError }}</p>
                     </div>
                     <hr>
                     <div v-if="!itemSelectedReadability">

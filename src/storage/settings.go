@@ -16,6 +16,9 @@ func settingsDefaults() map[string]interface{} {
 		"theme_font":        "",
 		"theme_size":        1,
 		"refresh_rate":      0,
+		"ai_api_key":        "",
+		"ai_api_url":        "https://api.aimlapi.com/v1/chat/completions",
+		"ai_model":          "gpt-4o-mini",
 	}
 }
 
@@ -72,7 +75,7 @@ func (s *Storage) GetSettings() map[string]interface{} {
 func (s *Storage) UpdateSettings(kv map[string]interface{}) bool {
 	defaults := settingsDefaults()
 	for key, val := range kv {
-		if defaults[key] == nil {
+		if _, exists := defaults[key]; !exists {
 			continue
 		}
 		valEncoded, err := json.Marshal(val)
@@ -91,4 +94,34 @@ func (s *Storage) UpdateSettings(kv map[string]interface{}) bool {
 		}
 	}
 	return true
+}
+
+func (s *Storage) GetAIAPIKey() string {
+	val := s.GetSettingsValue("ai_api_key")
+	if val != nil {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return ""
+}
+
+func (s *Storage) GetAIAPIURL() string {
+	val := s.GetSettingsValue("ai_api_url")
+	if val != nil {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return "https://api.aimlapi.com/v1/chat/completions"
+}
+
+func (s *Storage) GetAIModel() string {
+	val := s.GetSettingsValue("ai_model")
+	if val != nil {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return "gpt-4o-mini"
 }

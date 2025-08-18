@@ -227,6 +227,8 @@ var vm = new Vue({
       'itemSelected': null,
       'itemSelectedDetails': null,
       'itemSelectedReadability': '',
+      'itemSelectedSummary': '',
+      'summaryError': '',
       'itemSearch': '',
       'itemSortNewestFirst': s.sort_newest_first,
       'itemListWidth': s.item_list_width || 300,
@@ -241,6 +243,7 @@ var vm = new Vue({
         'newfeed': false,
         'items': false,
         'readability': false,
+        'summary': false,
       },
       'fonts': ['', 'serif', 'monospace'],
       'feedStats': {},
@@ -250,6 +253,9 @@ var vm = new Vue({
         'size': s.theme_size,
       },
       'refreshRate': s.refresh_rate,
+      'aiKey': s.ai_api_key || '',
+      'aiURL': s.ai_api_url || 'https://api.aimlapi.com/v1/chat/completions',
+      'aiModel': s.ai_model || 'gpt-4o-mini',
       'authenticated': app.authenticated,
       'feed_errors': {},
     }
@@ -351,6 +357,8 @@ var vm = new Vue({
     },
     'itemSelected': function(newVal, oldVal) {
       this.itemSelectedReadability = ''
+      this.itemSelectedSummary = ''
+      this.summaryError = ''
       if (newVal === null) {
         this.itemSelectedDetails = null
         return
@@ -387,6 +395,10 @@ var vm = new Vue({
     'refreshRate': function(newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
       api.settings.update({refresh_rate: newVal})
+    },
+    'apiKey': function(newVal, oldVal) {
+      if (oldVal === undefined) return
+      api.settings.update({summary_api_key: newVal})
     },
   },
   methods: {
@@ -663,6 +675,48 @@ var vm = new Vue({
           vm.loading.readability = false
         })
       }
+    },
+    toggleSummary: function() {
+      if (this.itemSelectedSummary) {
+        this.itemSelectedSummary = ''
+        this.summaryError = ''
+        return
+      }
+      var item = this.itemSelectedDetails
+      if (!item) return
+      
+      var content = this.itemSelectedReadability || item.content || ''
+      if (!content) {
+        this.summaryError = 'No content available to summarize'
+        return
+      }
+      
+      this.loading.summary = true
+      this.summaryError = ''
+      
+      api.summarize(content, item.title).then(function(data) {
+        vm.loading.summary = false
+        if (data.error) {
+          vm.summaryError = data.error
+        } else {
+          vm.itemSelectedSummary = data.summary
+        }
+      }).catch(function(error) {
+        vm.loading.summary = false
+        vm.summaryError = 'Failed to generate summary: ' + error.message
+      })
+    },
+    updateAIKey: function(value) {
+      this.aiKey = value
+      api.settings.update({ai_api_key: value})
+    },
+    updateAIURL: function(value) {
+      this.aiURL = value
+      api.settings.update({ai_api_url: value})
+    },
+    updateAIModel: function(value) {
+      this.aiModel = value
+      api.settings.update({ai_model: value})
     },
     showSettings: function(settings) {
       this.settings = settings

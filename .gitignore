@@ -6,3 +6,5 @@
 *.db-wal
 *.syso
 versioninfo.rc
+
+.direnv
