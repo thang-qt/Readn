@@ -207,6 +207,12 @@
                         title="Mark All Read">
                     <span class="icon">{% inline "check.svg" %}</span>
                 </button>
+                <button class="toolbar-item ml-2"
+                        @click="summarizeFeed()"
+                        v-if="items.length > 0"
+                        title="Generate Feed Briefing">
+                    <span class="icon" :class="{'icon-loading': loading.feedSummary}">{% inline "file-text.svg" %}</span>
+                </button>
 
 
                 <button class="btn btn-link toolbar-item px-2 ml-2" v-if="!current.type" disabled>
@@ -368,6 +374,35 @@
                     <span class="icon">{% inline "x.svg" %}</span>
                 </button>
             </div>
+            <!-- Feed Summary Display -->
+            <div v-if="feedSummary && !itemSelectedDetails"
+                 ref="feedContent"
+                 class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1"
+                 :class="{'font-serif': theme.font == 'serif', 'font-monospace': theme.font == 'monospace'}"
+                 :style="{'font-size': theme.size + 'rem'}">
+                <div class="content-wrapper">
+                    <h1><b>{{ feedSummaryTitle }}</b></h1>
+                    <div class="text-muted mb-3">
+                        <time>{{ new Date().toLocaleDateString() }}</time>
+                    </div>
+                    <div v-if="feedSummaryError" class="alert alert-danger">
+                        {{ feedSummaryError }}
+                    </div>
+                    <div v-else class="feed-summary-content">
+                        <div v-html="formatChatMessage(feedSummary)"></div>
+                    </div>
+                </div>
+            </div>
+            <!-- Loading Feed Summary -->
+            <div v-if="loading.feedSummary && !itemSelectedDetails"
+                 class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1 d-flex align-items-center justify-content-center">
+                <div class="text-center">
+                    <span class="icon loading mb-3" style="font-size: 2rem;"></span>
+                    <h5 class="mb-2">Generating Feed Briefing...</h5>
+                    <p class="text-muted">Analyzing articles and creating your briefing</p>
+                </div>
+            </div>
+            <!-- Article Content -->
             <div v-if="itemSelectedDetails"
                  ref="content"
                  class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1"

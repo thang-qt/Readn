@@ -60,6 +60,7 @@ func (s *Server) handler() http.Handler {
 	r.For("/opml/export", s.handleOPMLExport)
 	r.For("/page", s.handlePageCrawl)
 	r.For("/api/summarize", s.handleSummarize)
+	r.For("/api/summarize-feed", s.handleFeedSummarize)
 	r.For("/api/chat", s.handleChat)
 	r.For("/logout", s.handleLogout)
 	r.For("/fever/", s.handleFever)
@@ -583,13 +584,9 @@ func (s *Server) callOpenAISummarize(content, title string) (string, error) {
 	apiURL := s.db.GetAIAPIURL()
 	model := s.db.GetAIModel()
 	aiPrompt := s.db.GetAIPrompt()
-	personality := s.db.GetAIPersonality()
 
 	prompt := fmt.Sprintf("%s\n\nTitle: %s\n\nContent: %s", aiPrompt, title, content)
 	systemMessage := "You are a helpful assistant that summarizes articles based on user instructions. Return only the summary content itself, without any preamble, headers, or additional text."
-	if personality != "" {
-		systemMessage += "\n\nPersonality instruction: " + personality
-	}
 
 	requestData := map[string]interface{}{
 		"model": model,
@@ -741,6 +738,187 @@ func (s *Server) callOpenAIChat(messages []struct {
 		"messages":    chatMessages,
 		"max_tokens":  500,
 		"temperature": 0.7,
+		"stream":      false,
+	}
+
+	jsonData, err := json.Marshal(requestData)
+	if err != nil {
+		return "", err
+	}
+
+	req, err := http.NewRequest("POST", apiURL, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return "", err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", "Bearer "+apiKey)
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("API request failed with status %d: %s", resp.StatusCode, string(body))
+	}
+
+	var response struct {
+		Choices []struct {
+			Message struct {
+				Content string `json:"content"`
+			} `json:"message"`
+		} `json:"choices"`
+	}
+
+	if err := json.Unmarshal(body, &response); err != nil {
+		return "", err
+	}
+
+	if len(response.Choices) == 0 {
+		return "", fmt.Errorf("no response from API")
+	}
+
+	return response.Choices[0].Message.Content, nil
+}
+
+func (s *Server) handleFeedSummarize(c *router.Context) {
+	if c.Req.Method != http.MethodPost {
+		c.Out.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var requestBody struct {
+		FolderID *int64 `json:"folder_id"`
+		FeedID   *int64 `json:"feed_id"`
+		Status   string `json:"status"`
+		Search   string `json:"search"`
+	}
+
+	if err := json.NewDecoder(c.Req.Body).Decode(&requestBody); err != nil {
+		log.Print("Error decoding request body:", err)
+		c.Out.WriteHeader(http.StatusBadRequest)
+		return
+	}
+
+	// Build filter like in handleItemList
+	filter := storage.ItemFilter{}
+	if requestBody.FolderID != nil {
+		filter.FolderID = requestBody.FolderID
+	}
+	if requestBody.FeedID != nil {
+		filter.FeedID = requestBody.FeedID
+	}
+	if requestBody.Status != "" {
+		statusValue := storage.StatusValues[requestBody.Status]
+		filter.Status = &statusValue
+	}
+	if requestBody.Search != "" {
+		filter.Search = &requestBody.Search
+	}
+
+	// Get up to 75 newest articles with content
+	articles := s.db.ListItems(filter, 75, true, true)
+	
+	if len(articles) == 0 {
+		c.JSON(http.StatusOK, map[string]interface{}{
+			"error": "No articles found in current selection",
+		})
+		return
+	}
+
+	// Generate summaries for all articles
+	var summaries []string
+	var feedTitle string
+	
+	// Get feed name for context
+	if requestBody.FeedID != nil {
+		if feed := s.db.GetFeed(*requestBody.FeedID); feed != nil {
+			feedTitle = feed.Title
+		}
+	} else if requestBody.FolderID != nil {
+		if folder := s.db.GetFolder(*requestBody.FolderID); folder != nil {
+			feedTitle = folder.Title + " (folder)"
+		}
+	} else if requestBody.Status == "unread" {
+		feedTitle = "Unread Articles"
+	} else if requestBody.Status == "starred" {
+		feedTitle = "Starred Articles" 
+	} else {
+		feedTitle = "All Articles"
+	}
+
+	for i, article := range articles {
+		if i >= 75 { // Extra safety check
+			break
+		}
+		
+		// Generate summary for this article
+		summary, err := s.callOpenAISummarize(article.Content, article.Title)
+		if err != nil {
+			// If summary fails, use title + truncated content
+			content := article.Content
+			if len(content) > 200 {
+				content = content[:200] + "..."
+			}
+			summary = article.Title + ": " + content
+		}
+		summaries = append(summaries, summary)
+	}
+
+	// Now create meta-summary from all article summaries
+	feedSummary, err := s.callOpenAIFeedSummarize(summaries, feedTitle)
+	if err != nil {
+		log.Print("Error calling OpenAI for feed summary:", err)
+		c.JSON(http.StatusOK, map[string]interface{}{
+			"error": "Failed to generate feed summary: " + err.Error(),
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"summary":      feedSummary,
+		"article_count": len(articles),
+		"feed_title":   feedTitle,
+	})
+}
+
+func (s *Server) callOpenAIFeedSummarize(summaries []string, feedTitle string) (string, error) {
+	apiKey := s.db.GetAIAPIKey()
+	if apiKey == "" {
+		return "", fmt.Errorf("API key not configured")
+	}
+
+	apiURL := s.db.GetAIAPIURL()
+	model := s.db.GetAIModel()
+
+	// Combine all summaries
+	combinedSummaries := strings.Join(summaries, "\n\n")
+	
+	prompt := fmt.Sprintf("Here are summaries of recent articles from '%s'. Create a briefing for it:\n\n%s", feedTitle, combinedSummaries)
+	systemMessage := "You are a news briefing assistant. Read through the RSS feed articles I provide and create a concise professional briefing. Focus on what's actually happening, identify any important trends or patterns across the stories, highlight key insights worth noting. Group related stories together rather than summarizing each article separately. Prioritize the most significant and recent developments. Keep it clear and to the point - write it like you're briefing someone who needs to stay informed but doesn't have time to read everything. Return only the briefing content without any preamble or anything else."
+
+	requestData := map[string]interface{}{
+		"model": model,
+		"messages": []map[string]interface{}{
+			{
+				"role":    "system",
+				"content": systemMessage,
+			},
+			{
+				"role":    "user",
+				"content": prompt,
+			},
+		},
+		"max_tokens":   800,
+		"temperature":  0.4,
 		"stream":      false,
 	}
 

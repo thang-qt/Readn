@@ -232,6 +232,9 @@ var vm = new Vue({
       'itemSelectedReadability': '',
       'itemSelectedSummary': '',
       'summaryError': '',
+      'feedSummary': '',
+      'feedSummaryError': '',
+      'feedSummaryTitle': '',
       'itemSearch': '',
       'itemSortNewestFirst': s.sort_newest_first,
       'itemListWidth': s.item_list_width || 300,
@@ -247,6 +250,7 @@ var vm = new Vue({
         'items': false,
         'readability': false,
         'summary': false,
+        'feedSummary': false,
         'chat': false,
       },
       'fonts': ['', 'serif', 'monospace'],
@@ -360,18 +364,27 @@ var vm = new Vue({
       if (oldVal === undefined) return  // do nothing, initial setup
       api.settings.update({filter: newVal}).then(this.refreshItems.bind(this, false))
       this.itemSelected = null
+      // Clear feed summary when changing filter
+      this.feedSummary = ''
+      this.feedSummaryError = ''
       this.computeStats()
     },
     'feedSelected': function(newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
       api.settings.update({feed: newVal}).then(this.refreshItems.bind(this, false))
       this.itemSelected = null
+      // Clear feed summary when changing feeds
+      this.feedSummary = ''
+      this.feedSummaryError = ''
       if (this.$refs.itemlist) this.$refs.itemlist.scrollTop = 0
     },
     'itemSelected': function(newVal, oldVal) {
       this.itemSelectedReadability = ''
       this.itemSelectedSummary = ''
       this.summaryError = ''
+      // Clear feed summary when selecting an article
+      this.feedSummary = ''
+      this.feedSummaryError = ''
       if (newVal === null) {
         this.itemSelectedDetails = null
         return
@@ -776,6 +789,36 @@ var vm = new Vue({
     updateAISummarizePrompt: function(value) {
       this.aiSummarizePrompt = value
       api.settings.update({ai_summarize_prompt: value})
+    },
+    summarizeFeed: function() {
+      var query = this.getItemsQuery()
+      this.loading.feedSummary = true
+      this.feedSummaryError = ''
+      // Clear previous feed summary content
+      this.feedSummary = ''
+      
+      // Convert string IDs to numbers for API
+      var folder_id = query.folder_id ? parseInt(query.folder_id) : null
+      var feed_id = query.feed_id ? parseInt(query.feed_id) : null
+      
+      api.summarize_feed(folder_id, feed_id, query.status, query.search).then(function(data) {
+        vm.loading.feedSummary = false
+        if (data.error) {
+          vm.feedSummaryError = data.error
+          vm.feedSummary = ''
+        } else {
+          // Clear current selection and show feed summary
+          vm.itemSelected = null
+          vm.itemSelectedDetails = null
+          vm.feedSummaryTitle = data.feed_title + ' - News Briefing (' + data.article_count + ' articles)'
+          vm.feedSummary = data.summary
+          vm.feedSummaryError = ''
+        }
+      }).catch(function(error) {
+        vm.loading.feedSummary = false
+        vm.feedSummaryError = 'Failed to generate feed summary: ' + error.message
+        vm.feedSummary = ''
+      })
     },
     toggleChatPanel: function() {
       this.chatPanelVisible = !this.chatPanelVisible

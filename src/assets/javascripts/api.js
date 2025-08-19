@@ -110,6 +110,14 @@
     summarize: function(content, title) {
       return api('post', './api/summarize', { content: content, title: title }).then(json)
     },
+    summarize_feed: function(folder_id, feed_id, status, search) {
+      return api('post', './api/summarize-feed', { 
+        folder_id: folder_id, 
+        feed_id: feed_id, 
+        status: status, 
+        search: search 
+      }).then(json)
+    },
     chat: function(messages, title, content) {
       return api('post', './api/chat', { 
         messages: messages, 
