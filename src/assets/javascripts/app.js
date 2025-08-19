@@ -212,6 +212,9 @@ var vm = new Vue({
       vm.feed_errors = errors
     })
   },
+  mounted: function() {
+    this.initTextSelection()
+  },
   data: function() {
     var s = app.settings
     return {
@@ -258,12 +261,16 @@ var vm = new Vue({
       'aiURL': s.ai_api_url || 'https://api.aimlapi.com/v1/chat/completions',
       'aiModel': s.ai_model || 'gpt-4o-mini',
       'aiPrompt': s.ai_prompt || 'Please provide a concise summary (TL;DR) of the following article. Keep summaries between 2-4 sentences, highlighting the key points and important details:',
+      'aiPersonality': s.ai_personality || 'You are a helpful, knowledgeable assistant that provides clear and concise responses.',
+      'aiExplainPrompt': s.ai_explain_prompt || 'Please explain this text in a clear and easy-to-understand way:',
+      'aiSummarizePrompt': s.ai_summarize_prompt || 'Please provide a concise summary of this text:',
       'authenticated': app.authenticated,
       'feed_errors': {},
       'sidebarCollapsed': s.sidebar_collapsed,
       'chatPanelVisible': false,
       'chatMessages': [],
       'chatInput': '',
+      'chatContext': '',
     }
   },
   computed: {
@@ -758,6 +765,18 @@ var vm = new Vue({
       this.aiPrompt = value
       api.settings.update({ai_prompt: value})
     },
+    updateAIPersonality: function(value) {
+      this.aiPersonality = value
+      api.settings.update({ai_personality: value})
+    },
+    updateAIExplainPrompt: function(value) {
+      this.aiExplainPrompt = value
+      api.settings.update({ai_explain_prompt: value})
+    },
+    updateAISummarizePrompt: function(value) {
+      this.aiSummarizePrompt = value
+      api.settings.update({ai_summarize_prompt: value})
+    },
     toggleChatPanel: function() {
       this.chatPanelVisible = !this.chatPanelVisible
       if (this.chatPanelVisible && this.chatMessages.length === 0) {
@@ -776,14 +795,33 @@ var vm = new Vue({
     sendChatMessage: function() {
       if (!this.chatInput.trim() || this.loading.chat || !this.itemSelectedDetails) return
       
-      var userMessage = {
-        role: 'user',
-        content: this.chatInput.trim()
+      var messageContent = this.chatInput.trim()
+      
+      // If there's context, include it in the message
+      if (this.chatContext) {
+        messageContent += '\n\nSelected text: "' + this.chatContext + '"'
       }
       
-      this.chatMessages.push(userMessage)
+      var userMessage = {
+        role: 'user',
+        content: messageContent
+      }
+      
+      this.chatMessages.push({
+        role: 'user',
+        content: this.chatInput.trim(),
+        hasContext: !!this.chatContext,
+        context: this.chatContext // Store the actual context text
+      })
+      
       var messages = this.chatMessages.slice() // Copy for API call
+      // Replace the last message with the full context version for API
+      if (this.chatContext) {
+        messages[messages.length - 1] = userMessage
+      }
+      
       this.chatInput = ''
+      this.chatContext = '' // Clear context after sending
       this.loading.chat = true
       
       var item = this.itemSelectedDetails
@@ -961,6 +999,229 @@ var vm = new Vue({
     },
     toggleSidebarCollapsed: function() {
       this.sidebarCollapsed = !this.sidebarCollapsed
+    },
+    
+    // Text selection for AI chat functionality
+    initTextSelection: function() {
+      var self = this
+      var selectedText = ''
+      var tooltipJustShown = false
+      
+      // Handle text selection
+      document.addEventListener('mouseup', function(e) {
+        var tooltip = document.getElementById('ai-tooltip')
+        if (!tooltip) return
+        
+        var selection = window.getSelection()
+        if (!selection.rangeCount || selection.isCollapsed) {
+          tooltip.classList.remove('show')
+          return
+        }
+        
+        var range = selection.getRangeAt(0)
+        var contentArea = document.querySelector('.content')
+        
+        // Check if selection is within content area
+        if (!contentArea || !contentArea.contains(range.commonAncestorContainer)) {
+          tooltip.classList.remove('show')
+          return
+        }
+        
+        selectedText = selection.toString().trim()
+        if (selectedText.length < 3) {
+          tooltip.classList.remove('show')
+          return
+        }
+        
+        tooltipJustShown = true
+        self.showAITooltip(selection)
+        
+        // Reset flag after a short delay
+        setTimeout(function() {
+          tooltipJustShown = false
+        }, 100)
+      })
+      
+      // Handle AI option selection
+      document.addEventListener('click', function(e) {
+        if (e.target.closest('.ai-tooltip-option')) {
+          var action = e.target.closest('.ai-tooltip-option').getAttribute('data-action')
+          if (selectedText) {
+            self.handleAIAction(action, selectedText)
+            var tooltip = document.getElementById('ai-tooltip')
+            if (tooltip) tooltip.classList.remove('show')
+            window.getSelection().removeAllRanges()
+            selectedText = ''
+          }
+        }
+      })
+      
+      // Hide tooltip on scroll or click outside
+      document.addEventListener('scroll', function() {
+        var tooltip = document.getElementById('ai-tooltip')
+        if (tooltip) tooltip.classList.remove('show')
+      }, true)
+      
+      document.addEventListener('click', function(e) {
+        // Don't hide tooltip if it was just shown
+        if (tooltipJustShown) return
+        
+        var tooltip = document.getElementById('ai-tooltip')
+        if (tooltip && !tooltip.contains(e.target)) {
+          tooltip.classList.remove('show')
+        }
+      })
+    },
+    
+    showAITooltip: function(selection) {
+      var tooltip = document.getElementById('ai-tooltip')
+      if (!tooltip) return
+      
+      var rect = selection.getRangeAt(0).getBoundingClientRect()
+      
+      // Show tooltip to calculate its dimensions
+      tooltip.classList.add('show')
+      
+      // Wait for next frame to get accurate dimensions
+      requestAnimationFrame(function() {
+        var tooltipWidth = tooltip.offsetWidth || 220
+        var tooltipHeight = tooltip.offsetHeight + 12 // Include arrow height
+        
+        // Position tooltip above the selection, centered
+        var left = Math.max(10, Math.min(
+          window.innerWidth - tooltipWidth - 10,
+          rect.left + rect.width / 2 - tooltipWidth / 2
+        ))
+        var top = rect.top - tooltipHeight - 5
+        
+        // If tooltip would be above viewport, show it below the selection
+        if (top < 10) {
+          top = rect.bottom + 10
+        }
+        
+        tooltip.style.left = left + 'px'
+        tooltip.style.top = top + 'px'
+      })
+    },
+    
+    handleAIAction: function(action, text) {
+      // Set the context text
+      this.chatContext = text
+      
+      // Open chat panel if not already open
+      if (!this.chatPanelVisible) {
+        this.chatPanelVisible = true
+      }
+      
+      var prompt = ''
+      var autoSend = false
+      
+      switch (action) {
+        case 'explain':
+          prompt = this.aiExplainPrompt || 'Please explain this'
+          autoSend = true
+          break
+        case 'summarize':
+          prompt = this.aiSummarizePrompt || 'Please summarize this'
+          autoSend = true
+          break
+        case 'question':
+          prompt = ''  // Empty prompt for custom questions
+          autoSend = false
+          break
+      }
+      
+      this.chatInput = prompt
+      
+      if (autoSend && prompt) {
+        // Auto-send for explain and summarize
+        var self = this
+        this.$nextTick(function() {
+          setTimeout(function() {
+            self.sendChatMessage()
+          }, 50)
+        })
+      } else {
+        // Focus the chat input for question (or when no prompt)
+        var self = this
+        this.$nextTick(function() {
+          setTimeout(function() {
+            var chatInput = document.querySelector('#chat-panel input[type="text"]')
+            if (chatInput) chatInput.focus()
+          }, 100)
+        })
+      }
+    },
+    sendChatMessageWithAction: function(action) {
+      if (!this.chatInput.trim() || this.loading.chat || !this.itemSelectedDetails) return
+      
+      var messageContent = this.chatInput.trim()
+      
+      // Store the message for display (showing the selected text)
+      this.chatMessages.push({
+        role: 'user',
+        content: messageContent,
+        hasContext: true,
+        context: messageContent // The selected text is the context
+      })
+      
+      // For API call, send the selected text as a user message
+      var messages = [{
+        role: 'user',
+        content: messageContent
+      }]
+      
+      this.chatInput = ''
+      this.chatContext = '' // Clear context after sending
+      this.loading.chat = true
+      
+      var item = this.itemSelectedDetails
+      var content = this.itemSelectedReadability || item.content || ''
+      var vm = this
+      
+      this.$nextTick(function() {
+        var chatContainer = vm.$refs.chatContainer
+        if (chatContainer) {
+          chatContainer.scrollTop = chatContainer.scrollHeight
+        }
+      })
+      
+      api.chat(messages, item.title, content, action).then(function(data) {
+        vm.loading.chat = false
+        if (data.error) {
+          vm.chatMessages.push({
+            role: 'assistant',
+            content: 'Sorry, I encountered an error: ' + data.error
+          })
+        } else {
+          vm.chatMessages.push({
+            role: 'assistant',
+            content: data.response
+          })
+        }
+        vm.$nextTick(function() {
+          var chatContainer = vm.$refs.chatContainer
+          if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight
+          }
+        })
+      }).catch(function(error) {
+        vm.loading.chat = false
+        vm.chatMessages.push({
+          role: 'assistant',
+          content: 'Sorry, I encountered an error: ' + error.message
+        })
+        vm.$nextTick(function() {
+          var chatContainer = vm.$refs.chatContainer
+          if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight
+          }
+        })
+      })
+    },
+    
+    clearChatContext: function() {
+      this.chatContext = ''
     },
   }
 })

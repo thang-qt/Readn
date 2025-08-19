@@ -20,6 +20,9 @@ func settingsDefaults() map[string]interface{} {
 		"ai_api_key":        "",
 		"ai_api_url":        "https://api.aimlapi.com/v1/chat/completions",
 		"ai_model":          "gpt-4o-mini",
+		"ai_personality":    "You are a helpful, knowledgeable assistant that provides clear and concise responses.",
+		"ai_explain_prompt": "Please explain this text in a clear and easy-to-understand way:",
+		"ai_summarize_prompt": "Please provide a concise summary of this text:",
 	}
 }
 
@@ -135,4 +138,34 @@ func (s *Storage) GetAIPrompt() string {
 		}
 	}
 	return "Please provide a concise summary (TL;DR) of the following article. Keep summaries between 2-4 sentences, highlighting the key points and important details:"
+}
+
+func (s *Storage) GetAIPersonality() string {
+	val := s.GetSettingsValue("ai_personality")
+	if val != nil {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return "You are a helpful, knowledgeable assistant that provides clear and concise responses."
+}
+
+func (s *Storage) GetAIExplainPrompt() string {
+	val := s.GetSettingsValue("ai_explain_prompt")
+	if val != nil {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return "Please explain this text in a clear and easy-to-understand way:"
+}
+
+func (s *Storage) GetAISummarizePrompt() string {
+	val := s.GetSettingsValue("ai_summarize_prompt")
+	if val != nil {
+		if str, ok := val.(string); ok {
+			return str
+		}
+	}
+	return "Please provide a concise summary of this text:"
 }

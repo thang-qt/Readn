@@ -583,15 +583,20 @@ func (s *Server) callOpenAISummarize(content, title string) (string, error) {
 	apiURL := s.db.GetAIAPIURL()
 	model := s.db.GetAIModel()
 	aiPrompt := s.db.GetAIPrompt()
+	personality := s.db.GetAIPersonality()
 
 	prompt := fmt.Sprintf("%s\n\nTitle: %s\n\nContent: %s", aiPrompt, title, content)
+	systemMessage := "You are a helpful assistant that summarizes articles based on user instructions. Return only the summary content itself, without any preamble, headers, or additional text."
+	if personality != "" {
+		systemMessage += "\n\nPersonality instruction: " + personality
+	}
 
 	requestData := map[string]interface{}{
 		"model": model,
 		"messages": []map[string]interface{}{
 			{
 				"role":    "system",
-				"content": "You are a helpful assistant that summarizes articles based on user instructions. Return only the summary content itself, without any preamble, headers, or additional text.",
+				"content": systemMessage,
 			},
 			{
 				"role":    "user",
@@ -702,20 +707,24 @@ func (s *Server) callOpenAIChat(messages []struct {
 	apiURL := s.db.GetAIAPIURL()
 	model := s.db.GetAIModel()
 
-	// Prepare context system message
-	contextMessage := "You are a helpful assistant discussing an article. Use the following article as context for the conversation.\n\n"
+	// Get AI personality and prepare context system message
+	personality := s.db.GetAIPersonality()
+	systemMessage := "You are a helpful assistant discussing an article. Use the following article as context for the conversation.\n\n"
 	if title != "" {
-		contextMessage += fmt.Sprintf("Title: %s\n\n", title)
+		systemMessage += fmt.Sprintf("Title: %s\n\n", title)
 	}
 	if content != "" {
-		contextMessage += fmt.Sprintf("Content: %s", content)
+		systemMessage += fmt.Sprintf("Content: %s", content)
+	}
+	if personality != "" {
+		systemMessage += "\n\nPersonality instruction: " + personality
 	}
 
-	// Build the message chain with context
+	// Build the message chain with system message
 	chatMessages := []map[string]interface{}{
 		{
 			"role":    "system",
-			"content": contextMessage,
+			"content": systemMessage,
 		},
 	}
 
