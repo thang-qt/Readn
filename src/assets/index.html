@@ -348,6 +348,13 @@
                         title="Read Here">
                     <span class="icon" :class="{'icon-loading': loading.readability}">{% inline "book-open.svg" %}</span>
                 </button>
+                <button class="toolbar-item hn-discussion-button"
+                        v-if="isHackerNewsItem(itemSelectedDetails)"
+                        :class="{active: itemSelectedHNDiscussion}"
+                        @click="toggleHNDiscussion()"
+                        title="Read Discussion Here">
+                    <span class="icon" :class="{'icon-loading': loading.hnDiscussion}">{% inline "users.svg" %}</span>
+                </button>
                 <button class="toolbar-item tldr-button"
                         :class="{active: itemSelectedSummary}"
                         @click="toggleSummary()"

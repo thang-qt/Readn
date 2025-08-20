@@ -230,6 +230,7 @@ var vm = new Vue({
       'itemSelected': null,
       'itemSelectedDetails': null,
       'itemSelectedReadability': '',
+      'itemSelectedHNDiscussion': '',
       'itemSelectedSummary': '',
       'summaryError': '',
       'feedSummary': '',
@@ -249,6 +250,7 @@ var vm = new Vue({
         'newfeed': false,
         'items': false,
         'readability': false,
+        'hnDiscussion': false,
         'summary': false,
         'feedSummary': false,
         'chat': false,
@@ -315,6 +317,9 @@ var vm = new Vue({
     },
     itemSelectedContent: function() {
       if (!this.itemSelected) return ''
+
+      if (this.itemSelectedHNDiscussion)
+        return this.itemSelectedHNDiscussion
 
       if (this.itemSelectedReadability)
         return this.itemSelectedReadability
@@ -428,6 +433,7 @@ var vm = new Vue({
     },
     'itemSelected': function(newVal, oldVal) {
       this.itemSelectedReadability = ''
+      this.itemSelectedHNDiscussion = ''
       this.itemSelectedSummary = ''
       this.summaryError = ''
       // Clear chat when switching articles
@@ -731,6 +737,34 @@ var vm = new Vue({
           vm.loading.readability = false
         })
       }
+    },
+    isHackerNewsItem: function(item) {
+      if (!item) return false
+      var isHNFeed = item.link && (item.link.includes('news.ycombinator.com') || item.link.includes('ycombinator.com'))
+      var hasHNDiscussion = item.content && item.content.includes('news.ycombinator.com/item?id=')
+      return isHNFeed || hasHNDiscussion
+    },
+    toggleHNDiscussion: function() {
+      if (this.itemSelectedHNDiscussion) {
+        this.itemSelectedHNDiscussion = ''
+        return
+      }
+      var item = this.itemSelectedDetails
+      if (!item) return
+      
+      this.loading.hnDiscussion = true
+      var vm = this
+      
+      api.hackernews({
+        content: item.content || '',
+        url: item.link || ''
+      }).then(function(data) {
+        vm.itemSelectedHNDiscussion = data && data.html
+        vm.loading.hnDiscussion = false
+      }).catch(function(error) {
+        console.error('Error fetching HN discussion:', error)
+        vm.loading.hnDiscussion = false
+      })
     },
     toggleSummary: function() {
       if (this.itemSelectedSummary) {

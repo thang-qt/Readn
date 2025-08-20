@@ -803,3 +803,144 @@ a,
     padding: .5rem;
   }
 }
+
+/* HackerNews Discussion Styles */
+.hn-thread {
+  line-height: 1.6;
+}
+
+.hn-title {
+  margin-bottom: 0.5rem;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+
+.hn-url {
+  margin-bottom: 0.5rem;
+}
+
+.hn-url a {
+  color: #827717;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+
+.hn-url a:hover {
+  text-decoration: underline;
+}
+
+.hn-meta {
+  margin-bottom: 1rem;
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.hn-points {
+  font-weight: 500;
+}
+
+.hn-author {
+  font-weight: 500;
+  color: #ff6600;
+}
+
+.hn-time {
+  color: #999;
+}
+
+.hn-content {
+  margin: 1rem 0;
+  padding: 0.75rem;
+  background: #f8f8f8;
+  border-left: 3px solid #ff6600;
+  border-radius: 4px;
+  line-height: 1.6;
+}
+
+.hn-content p {
+  margin-bottom: 0.75rem;
+}
+
+.hn-content p:last-child {
+  margin-bottom: 0;
+}
+
+.hn-content a {
+  color: #ff6600;
+  text-decoration: none;
+}
+
+.hn-content a:hover {
+  text-decoration: underline;
+}
+
+.hn-content pre {
+  background: #fff;
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  border-radius: 3px;
+  overflow-x: auto;
+}
+
+.hn-content code {
+  background: #fff;
+  padding: 0.1rem 0.3rem;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.9em;
+}
+
+.hn-comments h3 {
+  margin: 1rem 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  border-bottom: 1px solid #eee;
+  padding-bottom: 0.25rem;
+}
+
+.hn-comment {
+  margin-bottom: 1rem;
+  border-left: 2px solid #f0f0f0;
+  padding-left: 0.75rem;
+}
+
+.hn-comment-meta {
+  font-size: 0.85rem;
+  color: #666;
+  margin-bottom: 0.25rem;
+}
+
+.hn-comment-author {
+  font-weight: 500;
+  color: #ff6600;
+}
+
+.hn-comment-time {
+  color: #999;
+}
+
+.hn-comment-content {
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.hn-comment-content p {
+  margin-bottom: 0.5rem;
+}
+
+.hn-comment-content pre {
+  background: #f8f8f8;
+  padding: 0.5rem;
+  border-radius: 4px;
+  overflow-x: auto;
+  font-size: 0.85rem;
+}
+
+.hn-comment-content code {
+  background: #f8f8f8;
+  padding: 0.1rem 0.3rem;
+  border-radius: 3px;
+  font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  font-size: 0.85rem;
+}

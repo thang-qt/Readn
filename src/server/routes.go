@@ -14,6 +14,7 @@ import (
 	"strings"
 
 	"github.com/nkanaev/yarr/src/assets"
+	"github.com/nkanaev/yarr/src/content/hackernews"
 	"github.com/nkanaev/yarr/src/content/htmlutil"
 	"github.com/nkanaev/yarr/src/content/readability"
 	"github.com/nkanaev/yarr/src/content/sanitizer"
@@ -62,6 +63,7 @@ func (s *Server) handler() http.Handler {
 	r.For("/api/summarize", s.handleSummarize)
 	r.For("/api/summarize-feed", s.handleFeedSummarize)
 	r.For("/api/chat", s.handleChat)
+	r.For("/api/hackernews", s.handleHackerNews)
 	r.For("/logout", s.handleLogout)
 	r.For("/fever/", s.handleFever)
 
@@ -968,6 +970,59 @@ func (s *Server) callOpenAIFeedSummarize(summaries []string, feedTitle string) (
 	}
 
 	return response.Choices[0].Message.Content, nil
+}
+
+func (s *Server) handleHackerNews(c *router.Context) {
+	if c.Req.Method != "POST" {
+		c.Out.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	
+	var requestBody struct {
+		Content string `json:"content"`
+		URL     string `json:"url"`
+	}
+	
+	if err := json.NewDecoder(c.Req.Body).Decode(&requestBody); err != nil {
+		log.Print("Error decoding request body:", err)
+		c.Out.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	
+	// Try to extract HN item ID from content or URL
+	var itemID int
+	var err error
+	
+	if requestBody.Content != "" {
+		itemID, err = hackernews.ExtractHNItemIDFromContent(requestBody.Content)
+	}
+	
+	if err != nil && requestBody.URL != "" {
+		itemID, err = hackernews.ExtractHNItemID(requestBody.URL)
+	}
+	
+	if err != nil {
+		c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Could not find HackerNews discussion ID",
+		})
+		return
+	}
+	
+	thread, err := hackernews.GetHNThread(itemID)
+	if err != nil {
+		log.Printf("Error fetching HN thread %d: %v", itemID, err)
+		c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to fetch HackerNews thread",
+		})
+		return
+	}
+	
+	html := hackernews.GetHNThreadAsHTML(thread)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"html":     html,
+		"thread":   thread,
+		"comments": len(thread.Comments),
+	})
 }
 
 func (s *Server) handleLogout(c *router.Context) {

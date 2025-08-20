@@ -123,6 +123,9 @@
         messages: messages, 
         context: { title: title, content: content }
       }).then(json)
+    },
+    hackernews: function(data) {
+      return api('post', './api/hackernews', data).then(json)
     }
   }
 })()
