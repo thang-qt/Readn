@@ -728,6 +728,9 @@ var vm = new Vue({
         this.itemSelectedReadability = null
         return
       }
+      // Clear HN discussion when activating readability
+      this.itemSelectedHNDiscussion = ''
+      
       var item = this.itemSelectedDetails
       if (!item) return
       if (item.link) {
@@ -749,6 +752,9 @@ var vm = new Vue({
         this.itemSelectedHNDiscussion = ''
         return
       }
+      // Clear readability when activating HN discussion
+      this.itemSelectedReadability = ''
+      
       var item = this.itemSelectedDetails
       if (!item) return
       
