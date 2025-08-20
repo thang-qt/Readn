@@ -981,7 +981,7 @@ var vm = new Vue({
       var item = this.itemSelectedDetails
       if (!item) return
       
-      var content = this.itemSelectedReadability || item.content || ''
+      var content = this.itemSelectedContent
       if (!content) {
         this.summaryError = 'No content available to summarize'
         return
@@ -1108,7 +1108,7 @@ var vm = new Vue({
       this.loading.chat = true
       
       var item = this.itemSelectedDetails
-      var content = this.itemSelectedReadability || item.content || ''
+      var content = this.itemSelectedContent
       
       this.$nextTick(function() {
         var chatContainer = vm.$refs.chatContainer
@@ -1459,7 +1459,7 @@ var vm = new Vue({
       this.loading.chat = true
       
       var item = this.itemSelectedDetails
-      var content = this.itemSelectedReadability || item.content || ''
+      var content = this.itemSelectedContent
       var vm = this
       
       this.$nextTick(function() {
