@@ -785,7 +785,7 @@ var vm = new Vue({
       window.hnToggleComment = function(button) {
         var comment = button.closest('.hn-comment')
         var commentBody = comment.querySelector('.hn-comment-body')
-        var currentLevel = parseInt(comment.dataset.level)
+        var repliesContainer = comment.querySelector('.hn-comment-replies')
         var isCollapsed = comment.classList.contains('collapsed')
         var expandedIcon = button.querySelector('.hn-toggle-icon-expanded')
         var collapsedIcon = button.querySelector('.hn-toggle-icon-collapsed')
@@ -793,41 +793,23 @@ var vm = new Vue({
         if (isCollapsed) {
           // Expand this comment
           commentBody.style.display = ''
+          if (repliesContainer) {
+            repliesContainer.style.display = ''
+          }
           expandedIcon.style.display = ''
           collapsedIcon.style.display = 'none'
           button.dataset.expanded = 'true'
           comment.classList.remove('collapsed')
-          
-          // Show all child comments that were previously visible
-          var nextSibling = comment.nextElementSibling
-          while (nextSibling && nextSibling.classList.contains('hn-comment')) {
-            var siblingLevel = parseInt(nextSibling.dataset.level)
-            if (siblingLevel <= currentLevel) break
-            
-            nextSibling.style.display = ''
-            // Only expand if they weren't individually collapsed
-            if (!nextSibling.classList.contains('collapsed')) {
-              nextSibling.querySelector('.hn-comment-body').style.display = ''
-            }
-            nextSibling = nextSibling.nextElementSibling
-          }
         } else {
           // Collapse this comment
           commentBody.style.display = 'none'
+          if (repliesContainer) {
+            repliesContainer.style.display = 'none'
+          }
           expandedIcon.style.display = 'none'
           collapsedIcon.style.display = ''
           button.dataset.expanded = 'false'
           comment.classList.add('collapsed')
-          
-          // Hide all child comments
-          var nextSibling = comment.nextElementSibling
-          while (nextSibling && nextSibling.classList.contains('hn-comment')) {
-            var siblingLevel = parseInt(nextSibling.dataset.level)
-            if (siblingLevel <= currentLevel) break
-            
-            nextSibling.style.display = 'none'
-            nextSibling = nextSibling.nextElementSibling
-          }
         }
       }
       
@@ -842,7 +824,7 @@ var vm = new Vue({
           for (var i = currentIndex + 1; i < allComments.length; i++) {
             var comment = allComments[i]
             var level = parseInt(comment.dataset.level)
-            if (level === 0 && comment.style.display !== 'none') {
+            if (level === 0 && !vm.isCommentHidden(comment)) {
               vm.scrollToComment(comment)
               return
             }
@@ -851,7 +833,7 @@ var vm = new Vue({
           // For nested comments, find next visible comment at any level
           for (var i = currentIndex + 1; i < allComments.length; i++) {
             var comment = allComments[i]
-            if (comment.style.display !== 'none') {
+            if (!vm.isCommentHidden(comment)) {
               vm.scrollToComment(comment)
               return
             }
@@ -870,7 +852,7 @@ var vm = new Vue({
           for (var i = currentIndex - 1; i >= 0; i--) {
             var comment = allComments[i]
             var level = parseInt(comment.dataset.level)
-            if (level === 0 && comment.style.display !== 'none') {
+            if (level === 0 && !vm.isCommentHidden(comment)) {
               vm.scrollToComment(comment)
               return
             }
@@ -879,12 +861,32 @@ var vm = new Vue({
           // For nested comments, find previous visible comment at any level
           for (var i = currentIndex - 1; i >= 0; i--) {
             var comment = allComments[i]
-            if (comment.style.display !== 'none') {
+            if (!vm.isCommentHidden(comment)) {
               vm.scrollToComment(comment)
               return
             }
           }
         }
+      }
+      
+      // Helper function to check if comment is hidden
+      this.isCommentHidden = function(comment) {
+        // Check if comment itself is hidden via display:none
+        if (comment.style.display === 'none') return true
+        
+        // Check if any parent comment is collapsed
+        var parent = comment.parentElement
+        while (parent && parent !== document) {
+          if (parent.classList && parent.classList.contains('hn-comment') && parent.classList.contains('collapsed')) {
+            return true
+          }
+          if (parent.classList && parent.classList.contains('hn-comment-replies') && parent.style.display === 'none') {
+            return true
+          }
+          parent = parent.parentElement
+        }
+        
+        return false
       }
       
       // Helper function to scroll to and highlight a comment

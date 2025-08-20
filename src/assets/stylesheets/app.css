@@ -891,10 +891,10 @@ a,
   margin-bottom: 1.5rem;
 }
 
-/* Comment Structure - Clean with dotted tree lines */
+/* Comment Structure - Nested with proper hierarchy */
 .hn-comment {
   margin-bottom: 0.5rem;
-  border-left: 1px dotted rgba(0,0,0,0.2);
+  border-left: 1px dotted rgba(0,0,0,0.35);
   padding-left: 0.5rem;
   padding-bottom: 0.25rem;
 }
@@ -902,6 +902,15 @@ a,
 .hn-comment.collapsed {
   margin-bottom: 0.25rem;
   padding-bottom: 0.1rem;
+}
+
+.hn-comment-replies {
+  margin-left: 1rem;
+  margin-top: 0.5rem;
+}
+
+.hn-comment-replies .hn-comment {
+  border-left: 1px dotted rgba(0,0,0,0.35);
 }
 
 /* Comment Header - Clean layout */
