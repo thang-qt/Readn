@@ -770,25 +770,25 @@ var vm = new Vue({
         
         // Add HN navigation functionality after content loads
         vm.$nextTick(function() {
-          vm.initHNControls()
+          vm.initDiscussionControls()
         })
       }).catch(function(error) {
         console.error('Error fetching HN discussion:', error)
         vm.loading.hnDiscussion = false
       })
     },
-    initHNControls: function() {
-      // Initialize HackerNews-style controls after content is loaded
+    initDiscussionControls: function() {
+      // Initialize generic discussion controls after content is loaded
       var vm = this
       
-      // Global functions for HN controls (attached to window for onclick handlers)
-      window.hnToggleComment = function(button) {
-        var comment = button.closest('.hn-comment')
-        var commentBody = comment.querySelector('.hn-comment-body')
-        var repliesContainer = comment.querySelector('.hn-comment-replies')
+      // Global functions for discussion controls (attached to window for onclick handlers)
+      window.discussionToggleComment = function(button) {
+        var comment = button.closest('.discussion-comment')
+        var commentBody = comment.querySelector('.discussion-comment-body')
+        var repliesContainer = comment.querySelector('.discussion-comment-replies')
         var isCollapsed = comment.classList.contains('collapsed')
-        var expandedIcon = button.querySelector('.hn-toggle-icon-expanded')
-        var collapsedIcon = button.querySelector('.hn-toggle-icon-collapsed')
+        var expandedIcon = button.querySelector('.discussion-toggle-icon-expanded')
+        var collapsedIcon = button.querySelector('.discussion-toggle-icon-collapsed')
         
         if (isCollapsed) {
           // Expand this comment
@@ -813,10 +813,10 @@ var vm = new Vue({
         }
       }
       
-      window.hnNextComment = function(button) {
-        var currentComment = button.closest('.hn-comment')
+      window.discussionNextComment = function(button) {
+        var currentComment = button.closest('.discussion-comment')
         var currentLevel = parseInt(currentComment.dataset.level)
-        var allComments = Array.from(document.querySelectorAll('.hn-comment'))
+        var allComments = Array.from(document.querySelectorAll('.discussion-comment'))
         var currentIndex = allComments.indexOf(currentComment)
         
         if (currentLevel === 0) {
@@ -841,10 +841,10 @@ var vm = new Vue({
         }
       }
       
-      window.hnPrevComment = function(button) {
-        var currentComment = button.closest('.hn-comment')
+      window.discussionPrevComment = function(button) {
+        var currentComment = button.closest('.discussion-comment')
         var currentLevel = parseInt(currentComment.dataset.level)
-        var allComments = Array.from(document.querySelectorAll('.hn-comment'))
+        var allComments = Array.from(document.querySelectorAll('.discussion-comment'))
         var currentIndex = allComments.indexOf(currentComment)
         
         if (currentLevel === 0) {
@@ -869,6 +869,11 @@ var vm = new Vue({
         }
       }
       
+      // Backward compatibility - keep old HN function names working
+      window.hnToggleComment = window.discussionToggleComment
+      window.hnNextComment = window.discussionNextComment
+      window.hnPrevComment = window.discussionPrevComment
+      
       // Helper function to check if comment is hidden
       this.isCommentHidden = function(comment) {
         // Check if comment itself is hidden via display:none
@@ -877,10 +882,10 @@ var vm = new Vue({
         // Check if any parent comment is collapsed
         var parent = comment.parentElement
         while (parent && parent !== document) {
-          if (parent.classList && parent.classList.contains('hn-comment') && parent.classList.contains('collapsed')) {
+          if (parent.classList && parent.classList.contains('discussion-comment') && parent.classList.contains('collapsed')) {
             return true
           }
-          if (parent.classList && parent.classList.contains('hn-comment-replies') && parent.style.display === 'none') {
+          if (parent.classList && parent.classList.contains('discussion-comment-replies') && parent.style.display === 'none') {
             return true
           }
           parent = parent.parentElement

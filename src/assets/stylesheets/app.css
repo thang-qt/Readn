@@ -804,46 +804,45 @@ a,
   }
 }
 
-/* HackerNews Discussion Styles - Refined and consistent */
-.hn-thread {
+/* Generic Discussion Styles - Modular and provider-agnostic */
+.discussion-thread {
   line-height: 1.6;
   font-size: inherit;
 }
 
-.hn-title {
+.discussion-title {
   font-size: 1.5rem;
   font-weight: 600;
   color: inherit;
   line-height: 1.3;
 }
 
-.hn-url a {
+.discussion-url a {
   color: inherit;
   opacity: 0.6;
   text-decoration: none;
   font-size: 0.9rem;
 }
 
-.hn-url a:hover {
+.discussion-url a:hover {
   opacity: 0.8;
   text-decoration: underline;
 }
 
-.hn-meta {
+.discussion-meta {
   font-size: 0.9rem;
   opacity: 0.8;
 }
 
-.hn-author {
+.discussion-author {
   font-weight: 500;
-  color: #ff6600; /* HackerNews orange - platform-specific for authenticity */
 }
 
-.hn-time {
+.discussion-time {
   opacity: 0.7;
 }
 
-.hn-content {
+.discussion-content {
   padding: 1rem;
   background: rgba(0,0,0,0.02);
   border: 1px solid rgba(0,0,0,0.08);
@@ -851,21 +850,21 @@ a,
   line-height: 1.6;
 }
 
-.hn-content p {
+.discussion-content p {
   margin-bottom: 0.75rem;
 }
 
-.hn-content p:last-child {
+.discussion-content p:last-child {
   margin-bottom: 0;
 }
 
-.hn-content a {
+.discussion-content a {
   color: inherit;
   text-decoration: underline;
 }
 
-.hn-content pre,
-.hn-comment-content pre {
+.discussion-content pre,
+.discussion-comment-content pre {
   background: rgba(0,0,0,0.05);
   border: 1px solid rgba(0,0,0,0.08);
   padding: 0.75rem;
@@ -875,8 +874,8 @@ a,
   font-size: 0.85rem;
 }
 
-.hn-content code,
-.hn-comment-content code {
+.discussion-content code,
+.discussion-comment-content code {
   background: rgba(0,0,0,0.08);
   padding: 0.125rem 0.35rem;
   border-radius: 3px;
@@ -884,7 +883,7 @@ a,
   font-size: 0.85em;
 }
 
-.hn-comments h3 {
+.discussion-comments h3 {
   font-size: 1.17rem;
   font-weight: 600;
   color: inherit;
@@ -892,36 +891,36 @@ a,
 }
 
 /* Comment Structure - Nested with proper hierarchy */
-.hn-comment {
+.discussion-comment {
   margin-bottom: 0.5rem;
   border-left: 1px dotted rgba(0,0,0,0.35);
   padding-left: 0.5rem;
   padding-bottom: 0.25rem;
 }
 
-.hn-comment.collapsed {
+.discussion-comment.collapsed {
   margin-bottom: 0.25rem;
   padding-bottom: 0.1rem;
 }
 
-.hn-comment-replies {
+.discussion-comment-replies {
   margin-left: 1rem;
   margin-top: 0.5rem;
 }
 
-.hn-comment-replies .hn-comment {
-  border-left: 1px dotted rgba(0,0,0,0.35);
+.discussion-comment-replies .discussion-comment {
+  border-left: 1px dotted rgba(0,0,0,0.25);
 }
 
 /* Comment Header - Clean layout */
-.hn-comment-header {
+.discussion-comment-header {
   display: flex;
   align-items: center;
   gap: 0.25rem;
 }
 
 /* Comment controls */
-.hn-comment-toggle {
+.discussion-comment-toggle {
   background: none;
   border: none;
   color: #666;
@@ -933,7 +932,7 @@ a,
   align-items: center;
 }
 
-.hn-nav-btn {
+.discussion-nav-btn {
   background: none;
   border: none;
   color: #666;
@@ -944,133 +943,146 @@ a,
   font-size: 0.8rem;
 }
 
-.hn-comment-toggle .icon {
+.discussion-comment-toggle .icon {
   display: inline-flex;
   align-items: center;
   opacity: 0.7;
 }
 
-.hn-comment-toggle .icon svg {
+.discussion-comment-toggle .icon svg {
   width: 0.75rem;
   height: 0.75rem;
 }
 
-.hn-comment-toggle:hover {
+.discussion-comment-toggle:hover {
   color: #333;
 }
 
-.hn-comment-toggle:hover .icon {
+.discussion-comment-toggle:hover .icon {
   opacity: 1;
 }
 
-.hn-nav-btn:hover {
+.discussion-nav-btn:hover {
   color: #333;
 }
 
-.hn-comment-toggle:focus,
-.hn-nav-btn:focus {
+.discussion-comment-toggle:focus,
+.discussion-nav-btn:focus {
   outline: none;
   color: #000;
 }
 
-.hn-comment-toggle:focus .icon {
+.discussion-comment-toggle:focus .icon {
   opacity: 1;
 }
 
 /* Comment metadata */
-.hn-comment-author {
+.discussion-comment-author {
   font-weight: 600;
-  color: #ff6600; /* HackerNews orange - platform-specific for authenticity */
   font-size: 0.85rem;
 }
 
-.hn-comment-time {
+.discussion-comment-time {
   opacity: 0.8;
   color: rgba(0,0,0,0.6);
   font-size: 0.8rem;
 }
 
-.hn-comment-separator {
+.discussion-comment-separator {
   color: rgba(0,0,0,0.4);
   font-size: 0.8rem;
   user-select: none;
 }
 
-.hn-comment-content {
+.discussion-comment-content {
   font-size: 0.9rem;
   line-height: 1.5;
   color: inherit;
 }
 
-.hn-comment-content p {
+.discussion-comment-content p {
   margin-top: 0;
   margin-bottom: 0.4rem;
 }
 
-.hn-comment-content p:last-child {
+.discussion-comment-content p:last-child {
   margin-bottom: 0;
 }
 
-.hn-comment-content a {
+.discussion-comment-content a {
   color: inherit;
   text-decoration: underline;
 }
 
-/* Theme-specific HN styles */
+/* Provider-specific themes */
+
+/* HackerNews Theme */
+.discussion-hn .discussion-author,
+.discussion-hn .discussion-comment-author {
+  color: #ff6600; /* HackerNews orange */
+}
+
+/* Lobsters Theme */  
+.discussion-lobsters .discussion-author,
+.discussion-lobsters .discussion-comment-author {
+  color: #990000; /* Lobsters red */
+}
+
+/* Theme-specific discussion styles */
 
 /* Sepia Theme */
-.theme-sepia .hn-content,
-.theme-sepia .hn-content pre,
-.theme-sepia .hn-comment-content pre {
+.theme-sepia .discussion-content,
+.theme-sepia .discussion-content pre,
+.theme-sepia .discussion-comment-content pre {
   background: rgba(0,0,0,0.025);
   border-color: rgba(0,0,0,0.06);
 }
 
-.theme-sepia .hn-content code,
-.theme-sepia .hn-comment-content code {
+.theme-sepia .discussion-content code,
+.theme-sepia .discussion-comment-content code {
   background: rgba(0,0,0,0.06);
 }
 
-.theme-sepia .hn-comment {
+.theme-sepia .discussion-comment {
   border-left-color: rgba(0,0,0,0.25);
 }
 
 /* Night Theme */
-.theme-night .hn-content,
-.theme-night .hn-content pre,
-.theme-night .hn-comment-content pre {
+.theme-night .discussion-content,
+.theme-night .discussion-content pre,
+.theme-night .discussion-comment-content pre {
   background: rgba(255,255,255,0.025);
   border-color: rgba(255,255,255,0.06);
 }
 
-.theme-night .hn-content code,
-.theme-night .hn-comment-content code {
+.theme-night .discussion-content code,
+.theme-night .discussion-comment-content code {
   background: rgba(255,255,255,0.08);
 }
 
-.theme-night .hn-comment {
+.theme-night .discussion-comment {
   border-left-color: rgba(255,255,255,0.25);
 }
 
-.theme-night .hn-comment-meta {
+.theme-night .discussion-comment-meta {
   color: rgba(255,255,255,0.6);
 }
 
-.theme-night .hn-comment-toggle,
-.theme-night .hn-nav-btn {
+.theme-night .discussion-comment-toggle,
+.theme-night .discussion-nav-btn {
   color: #999;
 }
 
-.theme-night .hn-comment-toggle:hover,
-.theme-night .hn-nav-btn:hover {
+.theme-night .discussion-comment-toggle:hover,
+.theme-night .discussion-nav-btn:hover {
   color: #ccc;
 }
 
-.theme-night .hn-comment-toggle:focus,
-.theme-night .hn-nav-btn:focus {
+.theme-night .discussion-comment-toggle:focus,
+.theme-night .discussion-nav-btn:focus {
   color: #fff;
 }
 
-.theme-night .hn-comment-separator {
+.theme-night .discussion-comment-separator {
   color: rgba(255,255,255,0.4);
 }
