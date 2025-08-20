@@ -466,7 +466,7 @@
             <!-- chat panel -->
             <div id="chat-panel" class="vh-100 border-left flex-shrink-0" v-if="chatPanelVisible" style="width: 350px;">
             <div class="d-flex flex-column h-100">
-                <div class="toolbar px-2 d-flex align-items-center border-bottom">
+                <div class="toolbar px-2 d-flex align-items-center">
                     <span class="h6 mb-0">AI Chat</span>
                     <button class="btn btn-link p-0 ml-auto" @click="clearChat()" title="Clear Chat" v-if="chatMessages.length > 0">
                         <span class="icon">{% inline "trash.svg" %}</span>
@@ -475,7 +475,7 @@
                         <span class="icon">{% inline "x.svg" %}</span>
                     </button>
                 </div>
-                <div class="flex-grow-1 overflow-auto scroll-touch p-2" ref="chatContainer">
+                <div class="flex-grow-1 overflow-auto scroll-touch p-2 border-top" ref="chatContainer">
                     <div v-if="chatMessages.length === 0" class="text-muted text-center py-4">
                         <p>Start a conversation about this article!</p>
                         <p><small>Ask questions, request analysis, or discuss key points.</small></p>
