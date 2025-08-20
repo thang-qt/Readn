@@ -87,7 +87,6 @@ func (p *HackerNewsProvider) GetThread(itemID int) (*Thread, error) {
 	}
 	
 	thread := &Thread{
-		ID:       itemID,
 		Provider: "hn",
 		Comments: []Comment{},
 	}
@@ -102,15 +101,7 @@ func (p *HackerNewsProvider) GetThread(itemID int) (*Thread, error) {
 	// Extract metadata (points, author, time)
 	subtext := doc.Find(".subtext").First()
 	if subtext.Length() > 0 {
-		pointsText := subtext.Find(".score").Text()
-		if pointsText != "" {
-			// Extract number from "123 points"
-			re := regexp.MustCompile(`(\d+)\s+point`)
-			matches := re.FindStringSubmatch(pointsText)
-			if len(matches) >= 2 {
-				thread.Points, _ = strconv.Atoi(matches[1])
-			}
-		}
+		// Points are no longer stored in Thread struct
 		
 		thread.Author = subtext.Find(".hnuser").Text()
 		thread.Time = subtext.Find(".age").Text()
