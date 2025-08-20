@@ -209,15 +209,23 @@ func extractSingleComment(s *goquery.Selection) *HNComment {
 func GetHNThreadAsHTML(thread *HNThread) string {
 	var html strings.Builder
 	
-	// Thread header
+	// Thread header with yarr-style spacing and typography
 	html.WriteString(`<div class="hn-thread">`)
-	html.WriteString(fmt.Sprintf(`<h1 class="hn-title">%s</h1>`, thread.Title))
 	
+
+	
+	// Title with consistent styling
+	html.WriteString(fmt.Sprintf(`<h1 class="hn-title mb-2">%s</h1>`, thread.Title))
+	
+	// URL link (similar to yarr's link styling)
 	if thread.URL != "" && !strings.HasPrefix(thread.URL, "item?id=") {
-		html.WriteString(fmt.Sprintf(`<div class="hn-url"><a href="%s" target="_blank" rel="noopener noreferrer">%s</a></div>`, thread.URL, thread.URL))
+		html.WriteString(`<div class="hn-url mb-2">`)
+		html.WriteString(fmt.Sprintf(`<a href="%s" target="_blank" rel="noopener noreferrer" class="text-muted">%s</a>`, thread.URL, thread.URL))
+		html.WriteString(`</div>`)
 	}
 	
-	html.WriteString(`<div class="hn-meta">`)
+	// Metadata with consistent styling (similar to yarr's item metadata)
+	html.WriteString(`<div class="hn-meta text-muted mb-3">`)
 	if thread.Author != "" {
 		html.WriteString(fmt.Sprintf(`by <span class="hn-author">%s</span>`, thread.Author))
 	}
@@ -228,18 +236,19 @@ func GetHNThreadAsHTML(thread *HNThread) string {
 	
 	// Main post content (for text posts)
 	if thread.Content != "" {
-		html.WriteString(`<div class="hn-content">`)
+		html.WriteString(`<div class="hn-content mb-4">`)
 		html.WriteString(thread.Content)
 		html.WriteString(`</div>`)
 	}
 	
-	// Comments section
+	// Comments section with consistent header
 	if len(thread.Comments) > 0 {
+		html.WriteString(`<hr>`)
 		html.WriteString(`<div class="hn-comments">`)
-		html.WriteString(fmt.Sprintf(`<h3>%d comment%s</h3>`, len(thread.Comments), pluralize(len(thread.Comments))))
+		html.WriteString(fmt.Sprintf(`<h3 class="mb-3">%d comment%s</h3>`, len(thread.Comments), pluralize(len(thread.Comments))))
 		
-		for _, comment := range thread.Comments {
-			html.WriteString(formatCommentAsHTML(comment))
+		for i, comment := range thread.Comments {
+			html.WriteString(formatCommentAsHTML(comment, i))
 		}
 		
 		html.WriteString(`</div>`)
@@ -250,17 +259,34 @@ func GetHNThreadAsHTML(thread *HNThread) string {
 	return html.String()
 }
 
-func formatCommentAsHTML(comment HNComment) string {
+func formatCommentAsHTML(comment HNComment, index int) string {
 	var html strings.Builder
 	
-	html.WriteString(fmt.Sprintf(`<div class="hn-comment" style="margin-left: %dpx;">`, comment.Level*20))
-	html.WriteString(`<div class="hn-comment-meta">`)
-	html.WriteString(fmt.Sprintf(`<span class="hn-comment-author">%s</span>`, comment.Author))
+	// Comment container with proper indentation and tree styling
+	indentPx := comment.Level * 20
+	html.WriteString(fmt.Sprintf(`<div class="hn-comment" data-comment-id="%d" data-index="%d" data-level="%d" style="margin-left: %dpx;">`, comment.ID, index, comment.Level, indentPx))
+	
+	// Comment header - clean layout
+	html.WriteString(`<div class="hn-comment-header">`)
+	html.WriteString(`<button class="hn-comment-toggle" onclick="hnToggleComment(this)" title="Toggle this comment and its replies" data-expanded="true">`)
+	html.WriteString(`<span class="hn-toggle-icon-expanded"><span class="icon"><svg width="1rem" height="1rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/></svg></span></span>`)
+	html.WriteString(`<span class="hn-toggle-icon-collapsed" style="display: none;"><span class="icon"><svg width="1rem" height="1rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 18 6-6-6-6"/></svg></span></span>`)
+	html.WriteString(`</button>`)
+	html.WriteString(fmt.Sprintf(` <span class="hn-comment-author">%s</span>`, comment.Author))
 	if comment.Time != "" {
 		html.WriteString(fmt.Sprintf(` <span class="hn-comment-time">%s</span>`, comment.Time))
 	}
+	html.WriteString(` <span class="hn-comment-separator">|</span> <button class="hn-nav-btn" onclick="hnPrevComment(this)" title="Previous comment">prev</button>`)
+	html.WriteString(` <span class="hn-comment-separator">|</span> <button class="hn-nav-btn" onclick="hnNextComment(this)" title="Next comment">next</button>`)
 	html.WriteString(`</div>`)
-	html.WriteString(fmt.Sprintf(`<div class="hn-comment-content">%s</div>`, comment.Content))
+	
+	// Comment content
+	html.WriteString(`<div class="hn-comment-body">`)
+	html.WriteString(`<div class="hn-comment-content">`)
+	html.WriteString(comment.Content)
+	html.WriteString(`</div>`)
+	html.WriteString(`</div>`)
+	
 	html.WriteString(`</div>`)
 	
 	return html.String()

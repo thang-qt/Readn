@@ -767,10 +767,135 @@ var vm = new Vue({
       }).then(function(data) {
         vm.itemSelectedHNDiscussion = data && data.html
         vm.loading.hnDiscussion = false
+        
+        // Add HN navigation functionality after content loads
+        vm.$nextTick(function() {
+          vm.initHNControls()
+        })
       }).catch(function(error) {
         console.error('Error fetching HN discussion:', error)
         vm.loading.hnDiscussion = false
       })
+    },
+    initHNControls: function() {
+      // Initialize HackerNews-style controls after content is loaded
+      var vm = this
+      
+      // Global functions for HN controls (attached to window for onclick handlers)
+      window.hnToggleComment = function(button) {
+        var comment = button.closest('.hn-comment')
+        var commentBody = comment.querySelector('.hn-comment-body')
+        var currentLevel = parseInt(comment.dataset.level)
+        var isCollapsed = comment.classList.contains('collapsed')
+        var expandedIcon = button.querySelector('.hn-toggle-icon-expanded')
+        var collapsedIcon = button.querySelector('.hn-toggle-icon-collapsed')
+        
+        if (isCollapsed) {
+          // Expand this comment
+          commentBody.style.display = ''
+          expandedIcon.style.display = ''
+          collapsedIcon.style.display = 'none'
+          button.dataset.expanded = 'true'
+          comment.classList.remove('collapsed')
+          
+          // Show all child comments that were previously visible
+          var nextSibling = comment.nextElementSibling
+          while (nextSibling && nextSibling.classList.contains('hn-comment')) {
+            var siblingLevel = parseInt(nextSibling.dataset.level)
+            if (siblingLevel <= currentLevel) break
+            
+            nextSibling.style.display = ''
+            // Only expand if they weren't individually collapsed
+            if (!nextSibling.classList.contains('collapsed')) {
+              nextSibling.querySelector('.hn-comment-body').style.display = ''
+            }
+            nextSibling = nextSibling.nextElementSibling
+          }
+        } else {
+          // Collapse this comment
+          commentBody.style.display = 'none'
+          expandedIcon.style.display = 'none'
+          collapsedIcon.style.display = ''
+          button.dataset.expanded = 'false'
+          comment.classList.add('collapsed')
+          
+          // Hide all child comments
+          var nextSibling = comment.nextElementSibling
+          while (nextSibling && nextSibling.classList.contains('hn-comment')) {
+            var siblingLevel = parseInt(nextSibling.dataset.level)
+            if (siblingLevel <= currentLevel) break
+            
+            nextSibling.style.display = 'none'
+            nextSibling = nextSibling.nextElementSibling
+          }
+        }
+      }
+      
+      window.hnNextComment = function(button) {
+        var currentComment = button.closest('.hn-comment')
+        var currentLevel = parseInt(currentComment.dataset.level)
+        var allComments = Array.from(document.querySelectorAll('.hn-comment'))
+        var currentIndex = allComments.indexOf(currentComment)
+        
+        if (currentLevel === 0) {
+          // For top-level comments, find next top-level comment
+          for (var i = currentIndex + 1; i < allComments.length; i++) {
+            var comment = allComments[i]
+            var level = parseInt(comment.dataset.level)
+            if (level === 0 && comment.style.display !== 'none') {
+              vm.scrollToComment(comment)
+              return
+            }
+          }
+        } else {
+          // For nested comments, find next visible comment at any level
+          for (var i = currentIndex + 1; i < allComments.length; i++) {
+            var comment = allComments[i]
+            if (comment.style.display !== 'none') {
+              vm.scrollToComment(comment)
+              return
+            }
+          }
+        }
+      }
+      
+      window.hnPrevComment = function(button) {
+        var currentComment = button.closest('.hn-comment')
+        var currentLevel = parseInt(currentComment.dataset.level)
+        var allComments = Array.from(document.querySelectorAll('.hn-comment'))
+        var currentIndex = allComments.indexOf(currentComment)
+        
+        if (currentLevel === 0) {
+          // For top-level comments, find previous top-level comment
+          for (var i = currentIndex - 1; i >= 0; i--) {
+            var comment = allComments[i]
+            var level = parseInt(comment.dataset.level)
+            if (level === 0 && comment.style.display !== 'none') {
+              vm.scrollToComment(comment)
+              return
+            }
+          }
+        } else {
+          // For nested comments, find previous visible comment at any level
+          for (var i = currentIndex - 1; i >= 0; i--) {
+            var comment = allComments[i]
+            if (comment.style.display !== 'none') {
+              vm.scrollToComment(comment)
+              return
+            }
+          }
+        }
+      }
+      
+      // Helper function to scroll to and highlight a comment
+      this.scrollToComment = function(comment) {
+        comment.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        // Highlight briefly
+        comment.style.backgroundColor = '#fffbf0'
+        setTimeout(function() {
+          comment.style.backgroundColor = ''
+        }, 1000)
+      }
     },
     toggleSummary: function() {
       if (this.itemSelectedSummary) {
