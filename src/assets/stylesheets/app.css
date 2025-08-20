@@ -1015,6 +1015,22 @@ a,
   text-decoration: underline;
 }
 
+.discussion-content blockquote,
+.discussion-comment-content blockquote {
+  border-left: 3px solid rgba(0,0,0,0.2);
+  padding-left: 1rem;
+  margin: 0.75rem 0;
+  opacity: 0.9;
+  font-style: italic;
+}
+
+.discussion-content pre code,
+.discussion-comment-content pre code {
+  background: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
 /* Provider-specific themes */
 
 /* HackerNews Theme */
@@ -1046,6 +1062,11 @@ a,
 
 .theme-sepia .discussion-comment {
   border-left-color: rgba(0,0,0,0.25);
+}
+
+.theme-sepia .discussion-content blockquote,
+.theme-sepia .discussion-comment-content blockquote {
+  border-left-color: rgba(0,0,0,0.15);
 }
 
 /* Night Theme */
@@ -1086,4 +1107,9 @@ a,
 
 .theme-night .discussion-comment-separator {
   color: rgba(255,255,255,0.4);
+}
+
+.theme-night .discussion-content blockquote,
+.theme-night .discussion-comment-content blockquote {
+  border-left-color: rgba(255,255,255,0.15);
 }
