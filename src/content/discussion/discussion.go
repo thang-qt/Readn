@@ -55,18 +55,6 @@ func GetThreadAsHTML(thread *Thread) string {
 	
 	html.WriteString(`<div class="discussion-thread discussion-` + providerClass + `">`)
 	
-	// Title with consistent styling
-	html.WriteString(`<h1 class="discussion-title mb-2">`)
-	html.WriteString(thread.Title)
-	html.WriteString(`</h1>`)
-	
-	// URL link (similar to yarr's link styling)
-	if thread.URL != "" && !strings.HasPrefix(thread.URL, "item?id=") {
-		html.WriteString(`<div class="discussion-url mb-2">`)
-		html.WriteString(`<a href="` + thread.URL + `" target="_blank" rel="noopener noreferrer" class="text-muted">` + thread.URL + `</a>`)
-		html.WriteString(`</div>`)
-	}
-	
 	// Metadata with consistent styling (similar to yarr's item metadata)
 	html.WriteString(`<div class="discussion-meta text-muted mb-3">`)
 	if thread.Author != "" {
@@ -166,4 +154,79 @@ func pluralize(count int, word string) string {
 
 func stringFromInt(i int) string {
 	return strings.Trim(strings.Replace(fmt.Sprintf("%d", i), "\x00", "", -1), " ")
+}
+
+// CountAllComments recursively counts all comments including nested ones
+func CountAllComments(comments []Comment) int {
+	total := 0
+	for _, comment := range comments {
+		total++ // Count this comment
+		total += CountAllComments(comment.Children) // Count all its children
+	}
+	return total
+}
+
+// RenderCommentsAsHTML converts a list of comments to HTML for display
+func RenderCommentsAsHTML(comments []Comment, theme string) string {
+	var html strings.Builder
+	
+	// Comments container with provider-specific theme class
+	html.WriteString(`<div class="discussion-comments discussion-` + theme + `">`)
+	
+	if len(comments) > 0 {
+		totalCount := CountAllComments(comments)
+		html.WriteString(`<h3 class="mb-3">`)
+		html.WriteString(pluralize(totalCount, "comment"))
+		html.WriteString(`</h3>`)
+		
+		html.WriteString(renderCommentsRecursive(comments, 0))
+	}
+	
+	html.WriteString(`</div>`)
+	
+	return html.String()
+}
+
+func renderCommentsRecursive(comments []Comment, level int) string {
+	var html strings.Builder
+	
+	for _, comment := range comments {
+		html.WriteString(`<div class="discussion-comment" data-comment-id="`)
+		html.WriteString(stringFromInt(comment.ID))
+		html.WriteString(`" data-level="`)
+		html.WriteString(stringFromInt(comment.Level))
+		html.WriteString(`">`)
+		
+		// Comment header
+		html.WriteString(`<div class="discussion-comment-header">`)
+		html.WriteString(`<button class="discussion-comment-toggle" onclick="discussionToggleComment(this)" title="Toggle this comment and its replies" data-expanded="true">`)
+		html.WriteString(`<span class="discussion-toggle-icon-expanded"><span class="icon"><svg width="1rem" height="1rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m6 9 6 6 6-6"/></svg></span></span>`)
+		html.WriteString(`<span class="discussion-toggle-icon-collapsed" style="display: none;"><span class="icon"><svg width="1rem" height="1rem" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="m9 18 6-6-6-6"/></svg></span></span>`)
+		html.WriteString(`</button>`)
+		html.WriteString(` <span class="discussion-comment-author">` + comment.Author + `</span>`)
+		if comment.Time != "" {
+			html.WriteString(` <span class="discussion-comment-time">` + comment.Time + `</span>`)
+		}
+		html.WriteString(` <span class="discussion-comment-separator">|</span> <button class="discussion-nav-btn" onclick="discussionPrevComment(this)" title="Previous comment">prev</button>`)
+		html.WriteString(` <span class="discussion-comment-separator">|</span> <button class="discussion-nav-btn" onclick="discussionNextComment(this)" title="Next comment">next</button>`)
+		html.WriteString(`</div>`)
+		
+		// Comment content
+		html.WriteString(`<div class="discussion-comment-body">`)
+		html.WriteString(`<div class="discussion-comment-content">`)
+		html.WriteString(comment.Content)
+		html.WriteString(`</div>`)
+		html.WriteString(`</div>`)
+		
+		// Render replies
+		if len(comment.Children) > 0 {
+			html.WriteString(`<div class="discussion-comment-replies">`)
+			html.WriteString(renderCommentsRecursive(comment.Children, level+1))
+			html.WriteString(`</div>`)
+		}
+		
+		html.WriteString(`</div>`)
+	}
+	
+	return html.String()
 }

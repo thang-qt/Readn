@@ -10,10 +10,12 @@ import (
 	"net/http"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"strconv"
 	"strings"
 
 	"github.com/nkanaev/yarr/src/assets"
+	"github.com/nkanaev/yarr/src/content/discussion"
 	"github.com/nkanaev/yarr/src/content/hackernews"
 	"github.com/nkanaev/yarr/src/content/htmlutil"
 	"github.com/nkanaev/yarr/src/content/readability"
@@ -64,6 +66,7 @@ func (s *Server) handler() http.Handler {
 	r.For("/api/summarize-feed", s.handleFeedSummarize)
 	r.For("/api/chat", s.handleChat)
 	r.For("/api/hackernews", s.handleHackerNews)
+	r.For("/api/lobsters", s.handleLobsters)
 	r.For("/logout", s.handleLogout)
 	r.For("/fever/", s.handleFever)
 
@@ -1022,6 +1025,65 @@ func (s *Server) handleHackerNews(c *router.Context) {
 		"html":     html,
 		"thread":   thread,
 		"comments": len(thread.Comments),
+	})
+}
+
+func (s *Server) handleLobsters(c *router.Context) {
+	if c.Req.Method != "POST" {
+		c.Out.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+	
+	var requestBody struct {
+		Content string `json:"content"`
+		URL     string `json:"url"`
+	}
+	
+	if err := json.NewDecoder(c.Req.Body).Decode(&requestBody); err != nil {
+		log.Print("Error decoding request body:", err)
+		c.Out.WriteHeader(http.StatusBadRequest)
+		return
+	}
+	
+	provider := &discussion.LobstersProvider{}
+	
+	// Try to find Lobsters URL in content first, then check direct URL
+	var url string
+	if requestBody.Content != "" {
+		// Extract Lobsters URL from content (look for lobste.rs links)
+		lobstersPattern := regexp.MustCompile(`https://lobste\.rs/s/[a-z0-9]+[^">\s]*`)
+		if match := lobstersPattern.FindString(requestBody.Content); match != "" {
+			url = match
+		}
+	}
+	
+	// If not found in content, check if the direct URL is a Lobsters URL
+	if url == "" && requestBody.URL != "" && provider.IsValidURL(requestBody.URL) {
+		url = requestBody.URL
+	}
+	
+	if url == "" {
+		c.JSON(http.StatusBadRequest, map[string]string{
+			"error": "Could not find Lobste.rs discussion URL",
+		})
+		return
+	}
+	
+	thread, err := provider.FetchThread(url)
+	if err != nil {
+		log.Printf("Error fetching Lobsters thread %s: %v", url, err)
+		c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Failed to fetch Lobste.rs thread",
+		})
+		return
+	}
+	
+	html := discussion.GetThreadAsHTML(thread)
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"html":     html,
+		"comments": discussion.CountAllComments(thread.Comments),
+		"provider": provider.Name(),
+		"theme":    provider.Theme(),
 	})
 }
 

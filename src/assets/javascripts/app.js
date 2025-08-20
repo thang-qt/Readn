@@ -231,6 +231,9 @@ var vm = new Vue({
       'itemSelectedDetails': null,
       'itemSelectedReadability': '',
       'itemSelectedHNDiscussion': '',
+      'itemSelectedDiscussion': '',
+      'itemSelectedDiscussionProvider': '',
+      'itemSelectedLobstersDiscussion': '',
       'itemSelectedSummary': '',
       'summaryError': '',
       'feedSummary': '',
@@ -251,6 +254,8 @@ var vm = new Vue({
         'items': false,
         'readability': false,
         'hnDiscussion': false,
+        'discussion': false,
+        'lobstersDiscussion': false,
         'summary': false,
         'feedSummary': false,
         'chat': false,
@@ -320,6 +325,9 @@ var vm = new Vue({
 
       if (this.itemSelectedHNDiscussion)
         return this.itemSelectedHNDiscussion
+
+      if (this.itemSelectedDiscussion)
+        return this.itemSelectedDiscussion
 
       if (this.itemSelectedReadability)
         return this.itemSelectedReadability
@@ -434,6 +442,8 @@ var vm = new Vue({
     'itemSelected': function(newVal, oldVal) {
       this.itemSelectedReadability = ''
       this.itemSelectedHNDiscussion = ''
+      this.itemSelectedDiscussion = ''
+      this.itemSelectedDiscussionProvider = ''
       this.itemSelectedSummary = ''
       this.summaryError = ''
       // Clear chat when switching articles
@@ -728,8 +738,10 @@ var vm = new Vue({
         this.itemSelectedReadability = null
         return
       }
-      // Clear HN discussion when activating readability
+      // Clear discussions when activating readability
       this.itemSelectedHNDiscussion = ''
+      this.itemSelectedDiscussion = ''
+      this.itemSelectedDiscussionProvider = ''
       
       var item = this.itemSelectedDetails
       if (!item) return
@@ -746,6 +758,62 @@ var vm = new Vue({
       var isHNFeed = item.link && (item.link.includes('news.ycombinator.com') || item.link.includes('ycombinator.com'))
       var hasHNDiscussion = item.content && item.content.includes('news.ycombinator.com/item?id=')
       return isHNFeed || hasHNDiscussion
+    },
+    getDiscussionProvider: function(item) {
+      if (!item) return null
+      
+      // Check for HackerNews
+      var isHNFeed = item.link && (item.link.includes('news.ycombinator.com') || item.link.includes('ycombinator.com'))
+      var hasHNDiscussion = item.content && item.content.includes('news.ycombinator.com/item?id=')
+      if (isHNFeed || hasHNDiscussion) return 'hackernews'
+      
+      // Check for Lobsters
+      var isLobstersFeed = item.link && item.link.includes('lobste.rs/s/')
+      var hasLobstersDiscussion = item.content && item.content.includes('lobste.rs/s/')
+      if (isLobstersFeed || hasLobstersDiscussion) return 'lobsters'
+      
+      return null
+    },
+    hasDiscussion: function(item) {
+      return this.getDiscussionProvider(item) !== null
+    },
+    toggleDiscussion: function() {
+      if (this.itemSelectedDiscussion) {
+        this.itemSelectedDiscussion = ''
+        this.itemSelectedDiscussionProvider = ''
+        return
+      }
+      
+      var item = this.itemSelectedDetails
+      if (!item) return
+      
+      var provider = this.getDiscussionProvider(item)
+      if (!provider) return
+      
+      // Clear readability when activating discussion
+      this.itemSelectedReadability = ''
+      
+      this.loading.discussion = true
+      var vm = this
+      
+      var apiCall = provider === 'hackernews' ? api.hackernews : api.lobsters
+      
+      apiCall({
+        content: item.content || '',
+        url: item.link || ''
+      }).then(function(data) {
+        vm.itemSelectedDiscussion = data && data.html
+        vm.itemSelectedDiscussionProvider = provider
+        vm.loading.discussion = false
+        
+        // Initialize discussion controls after content is loaded
+        vm.$nextTick(function() {
+          vm.initDiscussionControls()
+        })
+      }).catch(function(error) {
+        console.error('Discussion load error:', error)
+        vm.loading.discussion = false
+      })
     },
     toggleHNDiscussion: function() {
       if (this.itemSelectedHNDiscussion) {

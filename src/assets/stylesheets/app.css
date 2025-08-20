@@ -852,6 +852,7 @@ a,
 
 .discussion-content p {
   margin-bottom: 0.75rem;
+  margin-top: 0;
 }
 
 .discussion-content p:last-child {

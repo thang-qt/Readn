@@ -126,6 +126,9 @@
     },
     hackernews: function(data) {
       return api('post', './api/hackernews', data).then(json)
+    },
+    lobsters: function(data) {
+      return api('post', './api/lobsters', data).then(json)
     }
   }
 })()
