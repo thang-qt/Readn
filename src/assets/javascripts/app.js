@@ -275,6 +275,10 @@ var vm = new Vue({
       'aiPersonality': s.ai_personality || 'You are a helpful, knowledgeable assistant that provides clear and concise responses.',
       'aiExplainPrompt': s.ai_explain_prompt || 'Please explain this text in a clear and easy-to-understand way:',
       'aiSummarizePrompt': s.ai_summarize_prompt || 'Please provide a concise summary of this text:',
+      'aiEnableArticleSummary': s.ai_enable_article_summary !== undefined ? s.ai_enable_article_summary : true,
+      'aiEnableFeedSummary': s.ai_enable_feed_summary !== undefined ? s.ai_enable_feed_summary : true,
+      'aiEnableChat': s.ai_enable_chat !== undefined ? s.ai_enable_chat : true,
+      'aiEnableTextActions': s.ai_enable_text_actions !== undefined ? s.ai_enable_text_actions : true,
       'authenticated': app.authenticated,
       'feed_errors': {},
       'sidebarCollapsed': s.sidebar_collapsed,
@@ -1029,6 +1033,22 @@ var vm = new Vue({
     updateAISummarizePrompt: function(value) {
       this.aiSummarizePrompt = value
       api.settings.update({ai_summarize_prompt: value})
+    },
+    updateAIEnableArticleSummary: function(value) {
+      this.aiEnableArticleSummary = value
+      api.settings.update({ai_enable_article_summary: value})
+    },
+    updateAIEnableFeedSummary: function(value) {
+      this.aiEnableFeedSummary = value
+      api.settings.update({ai_enable_feed_summary: value})
+    },
+    updateAIEnableChat: function(value) {
+      this.aiEnableChat = value
+      api.settings.update({ai_enable_chat: value})
+    },
+    updateAIEnableTextActions: function(value) {
+      this.aiEnableTextActions = value
+      api.settings.update({ai_enable_text_actions: value})
     },
     summarizeFeed: function() {
       var query = this.getItemsQuery()

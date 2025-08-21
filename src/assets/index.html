@@ -209,7 +209,7 @@
                 </button>
                 <button class="toolbar-item ml-2"
                         @click="summarizeFeed()"
-                        v-if="items.length > 0"
+                        v-if="items.length > 0 && aiEnableFeedSummary"
                         title="Generate Feed Briefing">
                     <span class="icon" :class="{'icon-loading': loading.feedSummary}">{% inline "file-text.svg" %}</span>
                 </button>
@@ -358,12 +358,14 @@
                 <button class="toolbar-item tldr-button"
                         :class="{active: itemSelectedSummary}"
                         @click="toggleSummary()"
+                        v-if="aiEnableArticleSummary"
                         title="TL;DR">
                     <span class="icon" :class="{'icon-loading': loading.summary}">{% inline "scissors.svg" %}</span>
                 </button>
                 <button class="toolbar-item chat-button"
                         :class="{active: chatPanelVisible}"
                         @click="toggleChatPanel()"
+                        v-if="aiEnableChat"
                         title="AI Chat">
                     <span class="icon" :class="{'icon-loading': loading.chat}">{% inline "message-circle.svg" %}</span>
                 </button>
@@ -448,7 +450,7 @@
                 </div>
             </div>
             <!-- AI Chat tooltip -->
-            <div id="ai-tooltip">
+            <div id="ai-tooltip" v-if="aiEnableTextActions">
                 <button class="ai-tooltip-option" data-action="explain">
                     <span class="icon">{% inline "help-circle.svg" %}</span>
                     <span class="text">Explain this</span>
@@ -457,14 +459,14 @@
                     <span class="icon">{% inline "file-text.svg" %}</span>
                     <span class="text">Summarize</span>
                 </button>
-                <button class="ai-tooltip-option" data-action="question">
+                <button class="ai-tooltip-option" data-action="question" v-if="aiEnableChat">
                     <span class="icon">{% inline "message-circle.svg" %}</span>
                     <span class="text">Ask about this</span>
                 </button>
             </div>
             </div>
             <!-- chat panel -->
-            <div id="chat-panel" class="vh-100 border-left flex-shrink-0" v-if="chatPanelVisible" style="width: 350px;">
+            <div id="chat-panel" class="vh-100 border-left flex-shrink-0" v-if="chatPanelVisible && aiEnableChat" style="width: 350px;">
             <div class="d-flex flex-column h-100">
                 <div class="toolbar px-2 d-flex align-items-center">
                     <span class="h6 mb-0">AI Chat</span>
@@ -607,6 +609,55 @@
                 
                 <div class="mt-4">
                     <h5>AI Settings</h5>
+                    <div class="form-group">
+                        <label class="form-check-label d-block mb-2">
+                            <strong>AI Feature Controls</strong>
+                        </label>
+                        <div class="form-check">
+                            <input type="checkbox" 
+                                   id="ai-enable-article-summary"
+                                   class="form-check-input"
+                                   :checked="aiEnableArticleSummary"
+                                   @change="updateAIEnableArticleSummary($event.target.checked)">
+                            <label class="form-check-label" for="ai-enable-article-summary">
+                                Enable Article Summarization
+                            </label>
+                            <small class="form-text text-muted d-block">Generate AI summaries for individual articles</small>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" 
+                                   id="ai-enable-feed-summary"
+                                   class="form-check-input"
+                                   :checked="aiEnableFeedSummary"
+                                   @change="updateAIEnableFeedSummary($event.target.checked)">
+                            <label class="form-check-label" for="ai-enable-feed-summary">
+                                Enable Feed Summaries (Briefings)
+                            </label>
+                            <small class="form-text text-muted d-block">Generate AI briefings for multiple articles</small>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" 
+                                   id="ai-enable-chat"
+                                   class="form-check-input"
+                                   :checked="aiEnableChat"
+                                   @change="updateAIEnableChat($event.target.checked)">
+                            <label class="form-check-label" for="ai-enable-chat">
+                                Enable AI Chat
+                            </label>
+                            <small class="form-text text-muted d-block">Interactive chat with article context</small>
+                        </div>
+                        <div class="form-check">
+                            <input type="checkbox" 
+                                   id="ai-enable-text-actions"
+                                   class="form-check-input"
+                                   :checked="aiEnableTextActions"
+                                   @change="updateAIEnableTextActions($event.target.checked)">
+                            <label class="form-check-label" for="ai-enable-text-actions">
+                                Enable Text Actions (Explain/Summarize tooltips)
+                            </label>
+                            <small class="form-text text-muted d-block">Right-click text actions for explain and summarize</small>
+                        </div>
+                    </div>
                     <div class="form-group">
                         <label for="ai-api-key">AI API Key</label>
                         <input type="password"

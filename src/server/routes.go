@@ -549,6 +549,13 @@ func (s *Server) handleSummarize(c *router.Context) {
 		return
 	}
 
+	// Check if article summarization is enabled
+	if !s.db.IsAIArticleSummaryEnabled() {
+		c.Out.WriteHeader(http.StatusServiceUnavailable)
+		c.Out.Write([]byte(`{"error": "Article summarization is disabled"}`))
+		return
+	}
+
 	var requestBody struct {
 		Content string `json:"content"`
 		Title   string `json:"title"`
@@ -659,6 +666,14 @@ func (s *Server) callOpenAISummarize(content, title string) (string, error) {
 }
 
 func (s *Server) handleChat(c *router.Context) {
+	// Check if AI chat is enabled
+	if !s.db.IsAIChatEnabled() {
+		c.JSON(http.StatusServiceUnavailable, map[string]interface{}{
+			"error": "AI chat is disabled",
+		})
+		return
+	}
+
 	var req struct {
 		Messages []struct {
 			Role    string `json:"role"`
@@ -797,6 +812,13 @@ func (s *Server) callOpenAIChat(messages []struct {
 func (s *Server) handleFeedSummarize(c *router.Context) {
 	if c.Req.Method != http.MethodPost {
 		c.Out.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Check if feed summarization is enabled
+	if !s.db.IsAIFeedSummaryEnabled() {
+		c.Out.WriteHeader(http.StatusServiceUnavailable)
+		c.Out.Write([]byte(`{"error": "Feed summarization is disabled"}`))
 		return
 	}
 

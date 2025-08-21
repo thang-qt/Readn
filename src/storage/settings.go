@@ -23,6 +23,10 @@ func settingsDefaults() map[string]interface{} {
 		"ai_personality":    "You are a helpful, knowledgeable assistant that provides clear and concise responses.",
 		"ai_explain_prompt": "Please explain this text in a clear and easy-to-understand way:",
 		"ai_summarize_prompt": "Please provide a concise summary of this text:",
+		"ai_enable_article_summary": true,
+		"ai_enable_feed_summary": true,
+		"ai_enable_chat": true,
+		"ai_enable_text_actions": true,
 	}
 }
 
@@ -168,4 +172,44 @@ func (s *Storage) GetAISummarizePrompt() string {
 		}
 	}
 	return "Please provide a concise summary of this text:"
+}
+
+func (s *Storage) IsAIArticleSummaryEnabled() bool {
+	val := s.GetSettingsValue("ai_enable_article_summary")
+	if val != nil {
+		if enabled, ok := val.(bool); ok {
+			return enabled
+		}
+	}
+	return true
+}
+
+func (s *Storage) IsAIFeedSummaryEnabled() bool {
+	val := s.GetSettingsValue("ai_enable_feed_summary")
+	if val != nil {
+		if enabled, ok := val.(bool); ok {
+			return enabled
+		}
+	}
+	return true
+}
+
+func (s *Storage) IsAIChatEnabled() bool {
+	val := s.GetSettingsValue("ai_enable_chat")
+	if val != nil {
+		if enabled, ok := val.(bool); ok {
+			return enabled
+		}
+	}
+	return true
+}
+
+func (s *Storage) IsAITextActionsEnabled() bool {
+	val := s.GetSettingsValue("ai_enable_text_actions")
+	if val != nil {
+		if enabled, ok := val.(bool); ok {
+			return enabled
+		}
+	}
+	return true
 }
