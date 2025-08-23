@@ -508,8 +508,19 @@ select.form-control:not([multiple]):not([size]) {
 @media (max-width: 768px) {
     .custom-modal .modal-dialog {
         width: 95vw;
-        height: 90vh;
+        min-width: unset;
+        height: auto;
+        max-height: 90vh;
         margin: 0.5rem;
+        border-radius: 8px;
+    }
+
+    .custom-modal.settings-modal .modal-dialog {
+        height: 85vh;
+    }
+
+    .custom-modal .modal-content {
+        border-radius: 8px;
     }
 
     .custom-modal .modal-body {
@@ -519,18 +530,39 @@ select.form-control:not([multiple]):not([size]) {
 
 @media (max-width: 480px) {
     .custom-modal .modal-dialog {
-        width: 100vw;
-        height: 100vh;
-        margin: 0;
-        border-radius: 0;
+        width: calc(100vw - 2rem);
+        min-width: unset;
+        height: auto;
+        max-height: 90vh;
+        margin: 1rem;
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .custom-modal.settings-modal .modal-dialog {
+        height: 90vh;
+        max-height: 90vh;
     }
 
     .custom-modal .modal-content {
-        border-radius: 0;
+        border-radius: 8px;
     }
 
     .custom-modal .modal-body {
         padding: 0.75rem;
+    }
+
+    .custom-modal.settings-modal .modal-content {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .custom-modal.settings-modal .modal-body {
+        flex: 1;
+        overflow-y: auto;
     }
 }
 
