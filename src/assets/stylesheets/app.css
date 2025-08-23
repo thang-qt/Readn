@@ -443,11 +443,18 @@ select.form-control:not([multiple]):not([size]) {
 
 .custom-modal .modal-dialog {
   margin: 1rem;
+  width: auto;
+  min-width: 500px;
+  height: auto;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.custom-modal.settings-modal .modal-dialog {
   width: 90vw;
   max-width: 800px;
   height: 85vh;
-  display: flex;
-  flex-direction: column;
 }
 
 .custom-modal .modal-content {

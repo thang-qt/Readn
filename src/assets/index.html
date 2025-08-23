@@ -548,7 +548,7 @@
             </div>
         </div>
         </div>
-        <modal :open="!!settings" @hide="settings = ''">
+        <modal :open="!!settings" :modal-class="settings === 'settings' ? 'settings-modal' : ''" @hide="settings = ''">
             <button class="btn btn-link outline-none float-right p-2 mr-n2 mt-n2" style="line-height: 1" @click="settings = ''">
                 <span class="icon">{% inline "x.svg" %}</span>
             </button>

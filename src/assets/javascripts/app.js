@@ -126,9 +126,9 @@ Vue.component('dropdown', {
 })
 
 Vue.component('modal', {
-  props: ['open'],
+  props: ['open', 'modalClass'],
   template: `
-    <div class="modal custom-modal" tabindex="-1" v-if="$props.open">
+    <div class="modal custom-modal" :class="$props.modalClass" tabindex="-1" v-if="$props.open">
       <div class="modal-dialog">
         <div class="modal-content" ref="content">
           <div class="modal-body">
