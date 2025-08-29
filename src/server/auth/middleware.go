@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/nkanaev/yarr/src/assets"
-	"github.com/nkanaev/yarr/src/server/router"
-	"github.com/nkanaev/yarr/src/storage"
+	"github.com/thang-qt/Readn/src/assets"
+	"github.com/thang-qt/Readn/src/server/router"
+	"github.com/thang-qt/Readn/src/storage"
 )
 
 type Middleware struct {

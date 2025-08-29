@@ -32,50 +32,50 @@ src/platform/versioninfo.rc:
 # build targets
 
 host:
-	go build $(GO_FLAGS) -o out/yarr ./cmd/yarr
+	go build $(GO_FLAGS) -o out/readn ./cmd/readn
 
 darwin_amd64:
 	# cross-compilation not supported: CC="zig cc -target x86_64-macos-none"
-	GOOS=darwin GOARCH=arm64 go build $(GO_FLAGS) -o out/$@/yarr ./cmd/yarr
+	GOOS=darwin GOARCH=arm64 go build $(GO_FLAGS) -o out/$@/readn ./cmd/readn
 
 darwin_arm64:
 	# cross-compilation not supported: CC="zig cc -target aarch64-macos-none"
-	GOOS=darwin GOARCH=arm64 go build $(GO_FLAGS) -o out/$@/yarr ./cmd/yarr
+	GOOS=darwin GOARCH=arm64 go build $(GO_FLAGS) -o out/$@/readn ./cmd/readn
 
 linux_amd64:
 	CC="zig cc -target x86_64-linux-musl -O2 -g0" CGO_CFLAGS="-D_LARGEFILE64_SOURCE" GOOS=linux GOARCH=amd64 \
-	go build $(GO_FLAGS) -o out/$@/yarr ./cmd/yarr
+	go build $(GO_FLAGS) -o out/$@/readn ./cmd/readn
 
 linux_arm64:
 	CC="zig cc -target aarch64-linux-musl -O2 -g0" CGO_CFLAGS="-D_LARGEFILE64_SOURCE" GOOS=linux GOARCH=arm64 \
-	go build $(GO_FLAGS) -o out/$@/yarr ./cmd/yarr
+	go build $(GO_FLAGS) -o out/$@/readn ./cmd/readn
 
 linux_armv7:
 	CC="zig cc -target arm-linux-musleabihf -O2 -g0" CGO_CFLAGS="-D_LARGEFILE64_SOURCE" GOOS=linux GOARCH=arm GOARM=7 \
-	go build $(GO_FLAGS) -o out/$@/yarr ./cmd/yarr
+	go build $(GO_FLAGS) -o out/$@/readn ./cmd/readn
 
 windows_amd64:
-	CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build $(GO_FLAGS) -o out/$@/yarr ./cmd/yarr
+	CC="zig cc -target x86_64-windows-gnu" GOOS=windows GOARCH=amd64 go build $(GO_FLAGS) -o out/$@/readn ./cmd/readn
 
 windows_arm64:
-	CC="zig cc -target aarch64-windows-gnu" GOOS=windows GOARCH=arm64 go build $(GO_FLAGS) -o out/$@/yarr ./cmd/yarr
+	CC="zig cc -target aarch64-windows-gnu" GOOS=windows GOARCH=arm64 go build $(GO_FLAGS) -o out/$@/readn ./cmd/readn
 
 darwin_arm64_gui: etc/icon.icns
-	GOOS=darwin GOARCH=arm64 go build $(GO_FLAGS_GUI) -o out/$@/yarr ./cmd/yarr
-	./etc/macos_package.sh $(VERSION) etc/icon.icns out/$@/yarr out/$@
+	GOOS=darwin GOARCH=arm64 go build $(GO_FLAGS_GUI) -o out/$@/readn ./cmd/readn
+	./etc/macos_package.sh $(VERSION) etc/icon.icns out/$@/readn out/$@
 
 darwin_amd64_gui: etc/icon.icns
-	GOOS=darwin GOARCH=amd64 go build $(GO_FLAGS_GUI) -o out/$@/yarr ./cmd/yarr
-	./etc/macos_package.sh $(VERSION) etc/icon.icns out/$@/yarr out/$@
+	GOOS=darwin GOARCH=amd64 go build $(GO_FLAGS_GUI) -o out/$@/readn ./cmd/readn
+	./etc/macos_package.sh $(VERSION) etc/icon.icns out/$@/readn out/$@
 
 windows_amd64_gui: src/platform/versioninfo.rc
-	GOOS=windows GOARCH=amd64 go build $(GO_FLAGS_GUI_WIN) -o out/$@/yarr.exe ./cmd/yarr
+	GOOS=windows GOARCH=amd64 go build $(GO_FLAGS_GUI_WIN) -o out/$@/readn.exe ./cmd/readn
 
 windows_arm64_gui: src/platform/versioninfo.rc
-	GOOS=windows GOARCH=arm64 go build $(GO_FLAGS_GUI_WIN) -o out/$@/yarr.exe ./cmd/yarr
+	GOOS=windows GOARCH=arm64 go build $(GO_FLAGS_GUI_WIN) -o out/$@/readn.exe ./cmd/readn
 
 serve:
-	go run $(GO_FLAGS) ./cmd/yarr -db local.db
+	go run $(GO_FLAGS) ./cmd/readn -db local.db
 
 test:
 	go test $(GO_FLAGS) ./...

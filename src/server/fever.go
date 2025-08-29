@@ -11,9 +11,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nkanaev/yarr/src/server/auth"
-	"github.com/nkanaev/yarr/src/server/router"
-	"github.com/nkanaev/yarr/src/storage"
+	"github.com/thang-qt/Readn/src/server/auth"
+	"github.com/thang-qt/Readn/src/server/router"
+	"github.com/thang-qt/Readn/src/storage"
 )
 
 type FeverGroup struct {

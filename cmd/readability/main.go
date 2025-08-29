@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/nkanaev/yarr/src/content/readability"
+	"github.com/thang-qt/Readn/src/content/readability"
 )
 
 func main() {

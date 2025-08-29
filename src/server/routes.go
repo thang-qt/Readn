@@ -14,19 +14,19 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nkanaev/yarr/src/assets"
-	"github.com/nkanaev/yarr/src/content/discussion"
-	"github.com/nkanaev/yarr/src/content/hackernews"
-	"github.com/nkanaev/yarr/src/content/htmlutil"
-	"github.com/nkanaev/yarr/src/content/readability"
-	"github.com/nkanaev/yarr/src/content/sanitizer"
-	"github.com/nkanaev/yarr/src/content/silo"
-	"github.com/nkanaev/yarr/src/server/auth"
-	"github.com/nkanaev/yarr/src/server/gzip"
-	"github.com/nkanaev/yarr/src/server/opml"
-	"github.com/nkanaev/yarr/src/server/router"
-	"github.com/nkanaev/yarr/src/storage"
-	"github.com/nkanaev/yarr/src/worker"
+	"github.com/thang-qt/Readn/src/assets"
+	"github.com/thang-qt/Readn/src/content/discussion"
+	"github.com/thang-qt/Readn/src/content/hackernews"
+	"github.com/thang-qt/Readn/src/content/htmlutil"
+	"github.com/thang-qt/Readn/src/content/readability"
+	"github.com/thang-qt/Readn/src/content/sanitizer"
+	"github.com/thang-qt/Readn/src/content/silo"
+	"github.com/thang-qt/Readn/src/server/auth"
+	"github.com/thang-qt/Readn/src/server/gzip"
+	"github.com/thang-qt/Readn/src/server/opml"
+	"github.com/thang-qt/Readn/src/server/router"
+	"github.com/thang-qt/Readn/src/storage"
+	"github.com/thang-qt/Readn/src/worker"
 )
 
 func (s *Server) handler() http.Handler {
@@ -93,9 +93,9 @@ func (s *Server) handleStatic(c *router.Context) {
 func (s *Server) handleManifest(c *router.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"$schema":     "https://json.schemastore.org/web-manifest-combined.json",
-		"name":        "yarr!",
-		"short_name":  "yarr",
-		"description": "yet another rss reader",
+		"name":        "Readn",
+		"short_name":  "Readn",
+		"description": "Readn - RSS reader with AI integration and discussion support",
 		"display":     "standalone",
 		"start_url":   "/" + strings.TrimPrefix(s.BasePath, "/"),
 		"icons": []map[string]interface{}{

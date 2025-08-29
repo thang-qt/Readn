@@ -9,7 +9,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nkanaev/yarr/src/content/htmlutil"
+	"github.com/thang-qt/Readn/src/content/htmlutil"
 )
 
 type ItemStatus int

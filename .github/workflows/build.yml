@@ -22,25 +22,25 @@ jobs:
       with:
         id: darwin_arm64_gui
         cmd: make darwin_arm64_gui
-        out: out/darwin_arm64_gui/yarr.app
+        out: out/darwin_arm64_gui/readn.app
     - name: Build amd64 gui
       uses: ./.github/actions/prepare
       with:
         id: darwin_amd64_gui
         cmd: make darwin_amd64_gui
-        out: out/darwin_amd64_gui/yarr.app
+        out: out/darwin_amd64_gui/readn.app
     - name: Build arm64 cli
       uses: ./.github/actions/prepare
       with:
         id: darwin_arm64
         cmd: make darwin_arm64
-        out: out/darwin_arm64/yarr
+        out: out/darwin_arm64/readn
     - name: Build amd64 cli
       uses: ./.github/actions/prepare
       with:
         id: darwin_amd64
         cmd: make darwin_amd64
-        out: out/darwin_amd64/yarr
+        out: out/darwin_amd64/readn
 
   build_windows:
     name: Build for Windows
@@ -57,14 +57,14 @@ jobs:
       with:
         id: windows_amd64_gui
         cmd: make windows_amd64_gui
-        out: out/windows_amd64_gui/yarr.exe
+        out: out/windows_amd64_gui/readn.exe
     - name: Build arm64 gui
       if: false
       uses: ./.github/actions/prepare
       with:
         id: windows_arm64_gui
         cmd: make windows_arm64_gui
-        out: out/windows_arm64_gui/yarr.exe
+        out: out/windows_arm64_gui/readn.exe
 
   build_multi_cli:
     name: Build for Windows/MacOS/Linux CLI
@@ -85,31 +85,31 @@ jobs:
       with:
         id: linux_amd64
         cmd: make linux_amd64
-        out: out/linux_amd64/yarr
+        out: out/linux_amd64/readn
     - name: Build linux/arm64
       uses: ./.github/actions/prepare
       with:
         id: linux_arm64
         cmd: make linux_arm64
-        out: out/linux_arm64/yarr
+        out: out/linux_arm64/readn
     - name: Build linux/armv7
       uses: ./.github/actions/prepare
       with:
         id: linux_armv7
         cmd: make linux_armv7
-        out: out/linux_armv7/yarr
+        out: out/linux_armv7/readn
     - name: Build windows/amd64
       uses: ./.github/actions/prepare
       with:
         id: windows_amd64
         cmd: make windows_amd64
-        out: out/windows_amd64/yarr
+        out: out/windows_amd64/readn
     - name: Build windows/arm64
       uses: ./.github/actions/prepare
       with:
         id: windows_arm64
         cmd: make windows_arm64
-        out: out/windows_arm64/yarr
+        out: out/windows_arm64/readn
 
   create_release:
     name: Create Release
@@ -129,7 +129,7 @@ jobs:
         done
         for dir in out/*; do
           echo "Compressing: $dir"
-          (test -d "$dir" && cd $dir && zip -r ../yarr_`basename $dir`.zip *)
+          (test -d "$dir" && cd $dir && zip -r ../readn_`basename $dir`.zip *)
         done
         ls out
     - name: Upload Release

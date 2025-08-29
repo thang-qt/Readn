@@ -8,8 +8,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/nkanaev/yarr/src/storage"
-	"github.com/nkanaev/yarr/src/worker"
+	"github.com/thang-qt/Readn/src/storage"
+	"github.com/thang-qt/Readn/src/worker"
 )
 
 type Server struct {

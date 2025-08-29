@@ -1,4 +1,4 @@
-module github.com/nkanaev/yarr
+module github.com/thang-qt/Readn
 
 go 1.23.0
 

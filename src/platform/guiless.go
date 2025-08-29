@@ -3,7 +3,7 @@
 package platform
 
 import (
-	"github.com/nkanaev/yarr/src/server"
+	"github.com/thang-qt/Readn/src/server"
 )
 
 func Start(s *server.Server) {

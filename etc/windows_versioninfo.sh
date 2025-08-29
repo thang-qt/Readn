@@ -65,12 +65,12 @@ BEGIN
     BLOCK "080904E4"
     BEGIN
       VALUE "CompanyName", "Old MacDonald's Farm"
-      VALUE "FileDescription", "Yet another RSS reader"
+      VALUE "FileDescription", "Readn - RSS reader with AI integration and discussion support"
       VALUE "FileVersion", "$version"
-      VALUE "InternalName", "yarr"
-      VALUE "LegalCopyright", "nkanaev"
-      VALUE "OriginalFilename", "yarr.exe"
-      VALUE "ProductName", "yarr"
+      VALUE "InternalName", "readn"
+      VALUE "LegalCopyright", "nkanaev (original), thang-qt (fork)"
+      VALUE "OriginalFilename", "readn.exe"
+      VALUE "ProductName", "Readn"
       VALUE "ProductVersion", "$version"
     END
   END

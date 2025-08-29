@@ -16,32 +16,32 @@ ICNFILE=$2
 BINFILE=$3
 OUTPATH=$4
 
-mkdir -p $OUTPATH/yarr.app/Contents/MacOS
-mkdir -p $OUTPATH/yarr.app/Contents/Resources
+mkdir -p $OUTPATH/readn.app/Contents/MacOS
+mkdir -p $OUTPATH/readn.app/Contents/Resources
 
-mv $BINFILE $OUTPATH/yarr.app/Contents/MacOS/yarr
-cp $ICNFILE $OUTPATH/yarr.app/Contents/Resources/icon.icns
+mv $BINFILE $OUTPATH/readn.app/Contents/MacOS/readn
+cp $ICNFILE $OUTPATH/readn.app/Contents/Resources/icon.icns
 
-chmod u+x  $OUTPATH/yarr.app/Contents/MacOS/yarr
+chmod u+x  $OUTPATH/readn.app/Contents/MacOS/readn
 
-echo -n 'APPL????' >$OUTPATH/yarr.app/Contents/PkgInfo
-cat <<EOF >$OUTPATH/yarr.app/Contents/Info.plist
+echo -n 'APPL????' >$OUTPATH/readn.app/Contents/PkgInfo
+cat <<EOF >$OUTPATH/readn.app/Contents/Info.plist
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>CFBundleName</key>
-	<string>yarr</string>
+	<string>Readn</string>
 	<key>CFBundleDisplayName</key>
-	<string>yarr</string>
+	<string>Readn</string>
 	<key>CFBundleIdentifier</key>
-	<string>nkanaev.yarr</string>
+	<string>thang-qt.readn</string>
 	<key>CFBundleVersion</key>
 	<string>$VERSION</string>
 	<key>CFBundlePackageType</key>
 	<string>APPL</string>
 	<key>CFBundleExecutable</key>
-	<string>yarr</string>
+	<string>readn</string>
 
 	<key>CFBundleIconFile</key>
 	<string>icon</string>
@@ -56,7 +56,7 @@ cat <<EOF >$OUTPATH/yarr.app/Contents/Info.plist
 	<key>LSUIElement</key>
 	<true/>
 	<key>NSHumanReadableCopyright</key>
-	<string>Copyright © 2020 nkanaev. All rights reserved.</string>
+	<string>Copyright © 2020 nkanaev. All rights reserved. Fork by thang-qt.</string>
 </dict>
 </plist>
 EOF

@@ -6,7 +6,7 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/nkanaev/yarr/src/storage"
+	"github.com/thang-qt/Readn/src/storage"
 )
 
 const NUM_WORKERS = 4

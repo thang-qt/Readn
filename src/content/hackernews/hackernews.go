@@ -1,7 +1,7 @@
 package hackernews
 
 import (
-	"github.com/nkanaev/yarr/src/content/discussion"
+	"github.com/thang-qt/Readn/src/content/discussion"
 )
 
 // NewHackerNewsProvider creates a new HackerNews provider

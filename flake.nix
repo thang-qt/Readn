@@ -1,5 +1,5 @@
 {
-  description = "Yarr - Yet another RSS reader (Go)";
+  description = "Readn - RSS reader with AI integration and discussion support";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -13,7 +13,7 @@
       in
       {
         packages.default = pkgs.buildGoModule rec {
-          pname = "yarr";
+          pname = "readn";
           version = "dev";
 
           src = ./.;
@@ -33,9 +33,9 @@
           ];
 
           meta = with pkgs.lib; {
-            description = "Yet another RSS reader";
-            mainProgram = "yarr";
-            homepage = "https://github.com/nkanaev/yarr";
+            description = "RSS reader with AI integration and discussion support";
+            mainProgram = "readn";
+            homepage = "https://github.com/thang-qt/Readn";
             license = licenses.mit;
           };
         };
