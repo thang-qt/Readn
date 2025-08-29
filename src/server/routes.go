@@ -95,7 +95,7 @@ func (s *Server) handleManifest(c *router.Context) {
 		"$schema":     "https://json.schemastore.org/web-manifest-combined.json",
 		"name":        "Readn",
 		"short_name":  "Readn",
-		"description": "Readn - RSS reader with AI integration and discussion support",
+		"description": "ReadN - A minimal, yet featureful feed reader",
 		"display":     "standalone",
 		"start_url":   "/" + strings.TrimPrefix(s.BasePath, "/"),
 		"icons": []map[string]interface{}{

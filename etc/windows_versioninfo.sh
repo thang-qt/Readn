@@ -65,7 +65,7 @@ BEGIN
     BLOCK "080904E4"
     BEGIN
       VALUE "CompanyName", "Old MacDonald's Farm"
-      VALUE "FileDescription", "Readn - RSS reader with AI integration and discussion support"
+      VALUE "FileDescription", "ReadN - A minimal, yet featureful feed reader"
       VALUE "FileVersion", "$version"
       VALUE "InternalName", "readn"
       VALUE "LegalCopyright", "nkanaev (original), thang-qt (fork)"

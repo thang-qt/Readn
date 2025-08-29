@@ -1,5 +1,5 @@
 {
-  description = "Readn - RSS reader with AI integration and discussion support";
+  description = "ReadN - A minimal, yet featureful feed reader";
 
   inputs = {
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
