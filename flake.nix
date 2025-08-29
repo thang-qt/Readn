@@ -33,7 +33,7 @@
           ];
 
           meta = with pkgs.lib; {
-            description = "RSS reader with AI integration and discussion support";
+            description = "A minimal, yet featureful feed reader";
             mainProgram = "readn";
             homepage = "https://github.com/thang-qt/Readn";
             license = licenses.mit;
@@ -45,10 +45,11 @@
         };
 
         devShells.default = pkgs.mkShell {
-          buildInputs = [
-            pkgs.go
-            pkgs.gopls
-            pkgs.git
+          buildInputs = with pkgs; [
+            go
+            gopls
+            git
+            sqlite
           ];
         };
       });

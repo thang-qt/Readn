@@ -36,6 +36,8 @@ Usage instructions:
 
 For self-hosting, see `readn -h` for auth, tls & server configuration flags.
 
+Nix users can try it out with `nix run github:thang-qt/Readn`.
+
 See more:
 
 * [Building from source code](doc/build.md)
