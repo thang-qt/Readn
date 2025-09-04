@@ -52,5 +52,15 @@
             sqlite
           ];
         };
-      });
+      }) // {
+        nixosModules = {
+          readn = import ./nixos/modules/readn.nix;
+          default = import ./nixos/modules/readn.nix;
+        };
+        overlays = {
+          default = final: prev: {
+            readn = (self.packages.${final.system}).default;
+          };
+        };
+      };
 }
