@@ -1,6 +1,6 @@
 /_output
 /out
-/yarr
+/readn
 *.db
 *.db-shm
 *.db-wal
@@ -8,3 +8,4 @@
 versioninfo.rc
 
 .direnv
+
