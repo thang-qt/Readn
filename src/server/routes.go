@@ -47,6 +47,7 @@ func (s *Server) handler() http.Handler {
 
 	r.For("/", s.handleIndex)
 	r.For("/manifest.json", s.handleManifest)
+	r.For("/service-worker.js", s.handleServiceWorker)
 	r.For("/static/*path", s.handleStatic)
 	r.For("/api/status", s.handleStatus)
 	r.For("/api/folders", s.handleFolderList)
@@ -90,21 +91,78 @@ func (s *Server) handleStatic(c *router.Context) {
 }
 
 func (s *Server) handleManifest(c *router.Context) {
+	basePath := strings.TrimSuffix(s.BasePath, "/")
+	allowedScope := basePath
+	if allowedScope == "" {
+		allowedScope = "/"
+	}
+	if !strings.HasPrefix(allowedScope, "/") {
+		allowedScope = "/" + allowedScope
+	}
+	if !strings.HasSuffix(allowedScope, "/") {
+		allowedScope += "/"
+	}
+	startURL := "/"
+	if basePath != "" {
+		if strings.HasPrefix(basePath, "/") {
+			startURL = basePath
+		} else {
+			startURL = "/" + basePath
+		}
+	}
+
 	c.JSON(http.StatusOK, map[string]interface{}{
-		"$schema":     "https://json.schemastore.org/web-manifest-combined.json",
-		"name":        "Readn",
-		"short_name":  "Readn",
-		"description": "ReadN - A minimal, yet featureful feed reader",
-		"display":     "standalone",
-		"start_url":   "/" + strings.TrimPrefix(s.BasePath, "/"),
+		"$schema":          "https://json.schemastore.org/web-manifest-combined.json",
+		"name":             "Readn",
+		"short_name":       "Readn",
+		"description":      "ReadN - A minimal, yet featureful feed reader",
+		"display":          "standalone",
+		"start_url":        startURL,
+		"scope":            allowedScope,
+		"theme_color":      "#f8f9fa",
+		"background_color": "#f8f9fa",
 		"icons": []map[string]interface{}{
 			{
-				"src":   s.BasePath + "/static/graphicarts/favicon.png",
+				"src":   basePath + "/static/graphicarts/favicon.png",
 				"sizes": "64x64",
+				"type":  "image/png",
+			},
+			{
+				"src":   basePath + "/static/graphicarts/icon-192.png",
+				"sizes": "192x192",
+				"type":  "image/png",
+			},
+			{
+				"src":   basePath + "/static/graphicarts/icon-512.png",
+				"sizes": "512x512",
 				"type":  "image/png",
 			},
 		},
 	})
+}
+
+func (s *Server) handleServiceWorker(c *router.Context) {
+	file, err := assets.FS.Open("service-worker.js")
+	if err != nil {
+		c.Out.WriteHeader(http.StatusNotFound)
+		return
+	}
+	defer file.Close()
+
+	allowedScope := s.BasePath
+	if allowedScope == "" {
+		allowedScope = "/"
+	}
+	if !strings.HasSuffix(allowedScope, "/") {
+		allowedScope += "/"
+	}
+
+	c.Out.Header().Set("Content-Type", "application/javascript")
+	c.Out.Header().Set("Cache-Control", "no-cache")
+	c.Out.Header().Set("Service-Worker-Allowed", allowedScope)
+	if _, err := io.Copy(c.Out, file); err != nil {
+		log.Print(err)
+	}
 }
 
 func (s *Server) handleStatus(c *router.Context) {
@@ -611,8 +669,8 @@ func (s *Server) callOpenAISummarize(content, title string) (string, error) {
 				"content": prompt,
 			},
 		},
-		"max_tokens":   200,
-		"temperature":  0.3,
+		"max_tokens":  200,
+		"temperature": 0.3,
 		"stream":      false,
 	}
 
@@ -813,37 +871,37 @@ func (s *Server) handleHackerNews(c *router.Context) {
 		c.Out.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	var requestBody struct {
 		Content string `json:"content"`
 		URL     string `json:"url"`
 	}
-	
+
 	if err := json.NewDecoder(c.Req.Body).Decode(&requestBody); err != nil {
 		log.Print("Error decoding request body:", err)
 		c.Out.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	// Try to extract HN item ID from content or URL
 	var itemID int
 	var err error
-	
+
 	if requestBody.Content != "" {
 		itemID, err = hackernews.ExtractHNItemIDFromContent(requestBody.Content)
 	}
-	
+
 	if err != nil && requestBody.URL != "" {
 		itemID, err = hackernews.ExtractHNItemID(requestBody.URL)
 	}
-	
+
 	if err != nil {
 		c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Could not find HackerNews discussion ID",
 		})
 		return
 	}
-	
+
 	thread, err := hackernews.GetHNThread(itemID)
 	if err != nil {
 		log.Printf("Error fetching HN thread %d: %v", itemID, err)
@@ -852,7 +910,7 @@ func (s *Server) handleHackerNews(c *router.Context) {
 		})
 		return
 	}
-	
+
 	html := hackernews.GetHNThreadAsHTML(thread)
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"html":     html,
@@ -866,20 +924,20 @@ func (s *Server) handleLobsters(c *router.Context) {
 		c.Out.WriteHeader(http.StatusMethodNotAllowed)
 		return
 	}
-	
+
 	var requestBody struct {
 		Content string `json:"content"`
 		URL     string `json:"url"`
 	}
-	
+
 	if err := json.NewDecoder(c.Req.Body).Decode(&requestBody); err != nil {
 		log.Print("Error decoding request body:", err)
 		c.Out.WriteHeader(http.StatusBadRequest)
 		return
 	}
-	
+
 	provider := &discussion.LobstersProvider{}
-	
+
 	// Try to find Lobsters URL in content first, then check direct URL
 	var url string
 	if requestBody.Content != "" {
@@ -889,19 +947,19 @@ func (s *Server) handleLobsters(c *router.Context) {
 			url = match
 		}
 	}
-	
+
 	// If not found in content, check if the direct URL is a Lobsters URL
 	if url == "" && requestBody.URL != "" && provider.IsValidURL(requestBody.URL) {
 		url = requestBody.URL
 	}
-	
+
 	if url == "" {
 		c.JSON(http.StatusBadRequest, map[string]string{
 			"error": "Could not find Lobste.rs discussion URL",
 		})
 		return
 	}
-	
+
 	thread, err := provider.FetchThread(url)
 	if err != nil {
 		log.Printf("Error fetching Lobsters thread %s: %v", url, err)
@@ -910,7 +968,7 @@ func (s *Server) handleLobsters(c *router.Context) {
 		})
 		return
 	}
-	
+
 	html := discussion.GetThreadAsHTML(thread)
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"html":     html,

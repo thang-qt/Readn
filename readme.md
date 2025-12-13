@@ -47,4 +47,5 @@ See more:
 
 Special thanks to [nkanaev](https://github.com/nkanaev) for creating the original [yarr](https://github.com/nkanaev/yarr) project.
 
+[Phosphor Icons](https://phosphoricons.com/) for the app logo (newspaper).
 [Feather](http://feathericons.com/) for icons.

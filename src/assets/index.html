@@ -2,13 +2,14 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>yarr!</title>
+    <title>Readn</title>
     <link rel="stylesheet" href="./static/stylesheets/bootstrap.min.css">
     <link rel="stylesheet" href="./static/stylesheets/app.css">
     <link rel="icon" href="./static/graphicarts/favicon.svg" type="image/svg+xml">
     <link rel="alternate icon" href="./static/graphicarts/favicon.png" type="image/png">
     <link rel="manifest" href="./manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#f8f9fa">
     <script>
         window.app = window.app || {}
         window.app.settings = {% .settings %}
@@ -21,7 +22,7 @@
         <div id="col-feed-list" class="vh-100 position-relative d-flex flex-column border-right flex-shrink-0" :style="{width: feedListWidth+'px'}">
             <drag :width="feedListWidth" @resize="resizeFeedList"></drag>
             <div class="p-2 toolbar d-flex align-items-center">
-                <div class="icon mx-2">{% inline "anchor.svg" %}</div>
+                <div class="icon mx-2">{% inline "newspaper.svg" %}</div>
                 <div class="flex-grow-1"></div>
                 <button class="toolbar-item"
                         :class="{active: filterSelected == 'unread'}"
@@ -697,5 +698,15 @@
     <script src="./static/javascripts/api.js"></script>
     <script src="./static/javascripts/app.js"></script>
     <script src="./static/javascripts/key.js"></script>
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', function () {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .catch(function (err) {
+                        console.error('Service worker registration failed', err)
+                    })
+            })
+        }
+    </script>
 </body>
 </html>
