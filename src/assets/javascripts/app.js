@@ -764,6 +764,50 @@ var vm = new Vue({
       
       return null
     },
+    getDiscussionLink: function(item) {
+      if (!item) return { provider: null, discussionUrl: '', targetUrl: '' }
+      var provider = this.getDiscussionProvider(item)
+      
+      // Default values
+      var discussionUrl = ''
+      var targetUrl = item.url || item.link || ''
+      
+      if (provider === 'hackernews') {
+        var re = /https?:\/\/news\.ycombinator\.com\/item\?id=\d+/
+        if (item.content && re.test(item.content)) {
+          discussionUrl = (item.content.match(re) || [])[0] || ''
+        } else if (item.link && item.link.includes('news.ycombinator.com/item?id=')) {
+          discussionUrl = item.link
+          targetUrl = item.url || ''
+        }
+      } else if (provider === 'lobsters') {
+        var lobstersRe = /https?:\/\/lobste\.rs\/s\/[a-z0-9]+[^">\s]*/
+        if (item.content && lobstersRe.test(item.content)) {
+          discussionUrl = (item.content.match(lobstersRe) || [])[0] || ''
+        } else if (item.link && item.link.includes('lobste.rs/s/')) {
+          discussionUrl = item.link
+          targetUrl = item.url || ''
+        }
+      }
+
+      // Avoid duplicating the discussion link as the target link
+      if (discussionUrl && targetUrl === discussionUrl) {
+        targetUrl = ''
+      }
+      
+      return { provider: provider, discussionUrl: discussionUrl, targetUrl: targetUrl }
+    },
+    providerLabel: function(provider) {
+      if (provider === 'hackernews') return 'Hacker News'
+      if (provider === 'lobsters') return 'Lobsters'
+      return ''
+    },
+    providerMentionedInFeedTitle: function(item, provider) {
+      if (!item) return false
+      var feedTitle = ((this.feedsById[item.feed_id] || {}).title || '').trim().toLowerCase()
+      var label = this.providerLabel(provider).trim().toLowerCase()
+      return feedTitle && label && feedTitle.indexOf(label) !== -1
+    },
     hasDiscussion: function(item) {
       return this.getDiscussionProvider(item) !== null
     },

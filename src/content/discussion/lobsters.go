@@ -54,6 +54,9 @@ func (p *LobstersProvider) FetchThread(url string) (*Thread, error) {
 	if story.Length() > 0 {
 		if titleLink := story.Find(".link a").First(); titleLink.Length() > 0 {
 			thread.Title = strings.TrimSpace(titleLink.Text())
+			if href, ok := titleLink.Attr("href"); ok && href != "" {
+				thread.URL = strings.TrimSpace(href)
+			}
 		}
 
 		if authorLink := story.Find(".byline .u-author").First(); authorLink.Length() > 0 {

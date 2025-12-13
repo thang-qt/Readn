@@ -391,6 +391,26 @@
                                 {{ (feedsById[itemSelectedDetails.feed_id] || {}).title }}
                             </span>
                         </div>
+                        <div v-if="getDiscussionProvider(itemSelectedDetails) && !providerMentionedInFeedTitle(itemSelectedDetails, getDiscussionProvider(itemSelectedDetails))">
+                            <a v-if="getDiscussionLink(itemSelectedDetails).discussionUrl"
+                               :href="getDiscussionLink(itemSelectedDetails).discussionUrl"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="text-decoration-none">
+                                {{ providerLabel(getDiscussionProvider(itemSelectedDetails)) }}
+                            </a>
+                            <span v-else>
+                                {{ providerLabel(getDiscussionProvider(itemSelectedDetails)) }}
+                            </span>
+                        </div>
+                        <div v-if="getDiscussionLink(itemSelectedDetails).targetUrl" class="text-truncate">
+                            <a :href="getDiscussionLink(itemSelectedDetails).targetUrl"
+                               target="_blank"
+                               rel="noopener noreferrer"
+                               class="text-decoration-none">
+                                {{ getDiscussionLink(itemSelectedDetails).targetUrl }}
+                            </a>
+                        </div>
                         <time>{{ formatDate(itemSelectedDetails.date) }}</time>
                     </div>
                     <div v-if="itemSelectedSummary && !summaryError" class="summary-card mt-3 mb-3 p-3 border rounded bg-light">
