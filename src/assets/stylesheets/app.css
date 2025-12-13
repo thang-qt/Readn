@@ -1197,6 +1197,20 @@ a,
         gap: 0 !important;
     }
 
+    /* Override for article toolbar - ensure proper flex alignment */
+    #col-item .toolbar {
+        overflow-x: visible !important;
+        gap: 0 !important;
+        display: flex !important;
+        align-items: center !important;
+    }
+
+    /* Ensure flex-grow-1 works properly in article toolbar */
+    #col-item .toolbar .flex-grow-1 {
+        flex-grow: 1 !important;
+        min-width: 0;
+    }
+
     .toolbar::-webkit-scrollbar {
         display: none;
     }
