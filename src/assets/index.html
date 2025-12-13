@@ -201,23 +201,16 @@
                     <!-- id used by keybindings -->
                     <input id="searchbar" type="" class="d-block toolbar-search" v-model="itemSearch" @keydown.enter="$event.target.blur()">
                 </div>
-                <button class="toolbar-item ml-2"
-                        @click="markItemsRead()"
-                        v-if="filterSelected == 'unread'"
-                        title="Mark All Read">
-                    <span class="icon">{% inline "check.svg" %}</span>
-                </button>
-                <button class="toolbar-item ml-2"
-                        @click="summarizeFeed()"
-                        v-if="items.length > 0 && aiEnableFeedSummary"
-                        title="Generate Feed Briefing">
-                    <span class="icon" :class="{'icon-loading': loading.feedSummary}">{% inline "file-text.svg" %}</span>
-                </button>
-
-
-                <button class="btn btn-link toolbar-item px-2 ml-2" v-if="!current.type" disabled>
-                    <span class="icon">{% inline "more-horizontal.svg" %}</span>
-                </button>
+	                <button class="toolbar-item ml-2"
+	                        @click="markItemsRead()"
+	                        v-if="filterSelected == 'unread'"
+	                        title="Mark All Read">
+	                    <span class="icon">{% inline "check.svg" %}</span>
+	                </button>
+	
+	                <button class="btn btn-link toolbar-item px-2 ml-2" v-if="!current.type" disabled>
+	                    <span class="icon">{% inline "more-horizontal.svg" %}</span>
+	                </button>
                 <dropdown class="settings-dropdown"
                           toggle-class="btn btn-link toolbar-item px-2 ml-2"
                           drop="right"
@@ -379,42 +372,14 @@
                 <button class="toolbar-item" @click="navigateToItem(+1)" title="Next Article" :disabled="itemSelected == items[items.length - 1].id">
                     <span class="icon">{% inline "chevron-right.svg" %}</span>
                 </button>
-                <button class="toolbar-item" @click="itemSelected=null" title="Close Article">
-                    <span class="icon">{% inline "x.svg" %}</span>
-                </button>
-            </div>
-            <!-- Feed Summary Display -->
-            <div v-if="feedSummary && !itemSelectedDetails"
-                 ref="feedContent"
-                 class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1"
-                 :class="{'font-serif': theme.font == 'serif', 'font-monospace': theme.font == 'monospace'}"
-                 :style="{'font-size': theme.size + 'rem'}">
-                <div class="content-wrapper">
-                    <h1><b>{{ feedSummaryTitle }}</b></h1>
-                    <div class="text-muted mb-3">
-                        <time>{{ new Date().toLocaleDateString() }}</time>
-                    </div>
-                    <div v-if="feedSummaryError" class="alert alert-danger">
-                        {{ feedSummaryError }}
-                    </div>
-                    <div v-else class="feed-summary-content">
-                        <div v-html="formatChatMessage(feedSummary)"></div>
-                    </div>
-                </div>
-            </div>
-            <!-- Loading Feed Summary -->
-            <div v-if="loading.feedSummary && !itemSelectedDetails"
-                 class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1 d-flex align-items-center justify-content-center">
-                <div class="text-center">
-                    <span class="icon loading mb-3" style="font-size: 2rem;"></span>
-                    <h5 class="mb-2">Generating Feed Briefing...</h5>
-                    <p class="text-muted">Analyzing articles and creating your briefing</p>
-                </div>
-            </div>
-            <!-- Article Content -->
-            <div v-if="itemSelectedDetails"
-                 ref="content"
-                 class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1"
+	                <button class="toolbar-item" @click="itemSelected=null" title="Close Article">
+	                    <span class="icon">{% inline "x.svg" %}</span>
+	                </button>
+	            </div>
+	            <!-- Article Content -->
+	            <div v-if="itemSelectedDetails"
+	                 ref="content"
+	                 class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1"
                  :class="{'font-serif': theme.font == 'serif', 'font-monospace': theme.font == 'monospace'}"
                  :style="{'font-size': theme.size + 'rem'}">
                 <div class="content-wrapper">
@@ -613,32 +578,21 @@
                         <label class="form-check-label d-block mb-2">
                             <strong>AI Feature Controls</strong>
                         </label>
-                        <div class="form-check">
-                            <input type="checkbox" 
-                                   id="ai-enable-article-summary"
-                                   class="form-check-input"
-                                   :checked="aiEnableArticleSummary"
-                                   @change="updateAIEnableArticleSummary($event.target.checked)">
-                            <label class="form-check-label" for="ai-enable-article-summary">
-                                Enable Article Summarization
-                            </label>
-                            <small class="form-text text-muted d-block">Generate AI summaries for individual articles</small>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" 
-                                   id="ai-enable-feed-summary"
-                                   class="form-check-input"
-                                   :checked="aiEnableFeedSummary"
-                                   @change="updateAIEnableFeedSummary($event.target.checked)">
-                            <label class="form-check-label" for="ai-enable-feed-summary">
-                                Enable Feed Summaries (Briefings)
-                            </label>
-                            <small class="form-text text-muted d-block">Generate AI briefings for multiple articles</small>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" 
-                                   id="ai-enable-chat"
-                                   class="form-check-input"
+	                        <div class="form-check">
+	                            <input type="checkbox" 
+	                                   id="ai-enable-article-summary"
+	                                   class="form-check-input"
+	                                   :checked="aiEnableArticleSummary"
+	                                   @change="updateAIEnableArticleSummary($event.target.checked)">
+	                            <label class="form-check-label" for="ai-enable-article-summary">
+	                                Enable Article Summarization
+	                            </label>
+	                            <small class="form-text text-muted d-block">Generate AI summaries for individual articles</small>
+	                        </div>
+	                        <div class="form-check">
+	                            <input type="checkbox" 
+	                                   id="ai-enable-chat"
+	                                   class="form-check-input"
                                    :checked="aiEnableChat"
                                    @change="updateAIEnableChat($event.target.checked)">
                             <label class="form-check-label" for="ai-enable-chat">
@@ -668,26 +622,26 @@
                                @input="updateAIKey($event.target.value)"
                                title="Enter your API key to enable AI features">
                     </div>
-                    <div class="form-group">
-                        <label for="ai-api-url">AI API URL</label>
-                        <input type="url"
-                               id="ai-api-url"
-                               class="form-control"
-                               placeholder="https://api.aimlapi.com/v1/chat/completions"
-                               :value="aiURL"
-                               @input="updateAIURL($event.target.value)"
-                               title="AI API endpoint URL (default: aimlapi.com)">
-                    </div>
-                    <div class="form-group">
-                        <label for="ai-model">AI Model</label>
-                        <input type="text"
-                               id="ai-model"
-                               class="form-control"
-                               placeholder="gpt-4o-mini"
-                               :value="aiModel"
-                               @input="updateAIModel($event.target.value)"
-                               title="AI model to use for summaries">
-                    </div>
+	                    <div class="form-group">
+	                        <label for="ai-api-url">AI API URL</label>
+	                        <input type="url"
+	                               id="ai-api-url"
+	                               class="form-control"
+	                               placeholder="https://openrouter.ai/api/v1/chat/completions"
+	                               :value="aiURL"
+	                               @input="updateAIURL($event.target.value)"
+	                               title="AI API endpoint URL (default: openrouter.ai)">
+	                    </div>
+	                    <div class="form-group">
+	                        <label for="ai-model">AI Model</label>
+	                        <input type="text"
+	                               id="ai-model"
+	                               class="form-control"
+	                               placeholder="x-ai/grok-4.1-fast"
+	                               :value="aiModel"
+	                               @input="updateAIModel($event.target.value)"
+	                               title="AI model to use for summaries">
+	                    </div>
                     <div class="form-group">
                         <label for="ai-prompt">AI Summary Prompt</label>
                         <textarea id="ai-prompt"

@@ -7,7 +7,7 @@ This is a fork of the original [yarr](https://github.com/nkanaev/yarr) project b
 
 ## Enhanced Features
 
-- **AI Features**: Article summarization, feed briefings, interactive chat, and text selection actions (explain/summarize). All AI features can be individually disabled.
+- **AI Features**: Article summarization, interactive chat, and text selection actions (explain/summarize). All AI features can be individually disabled.
 - **Discussion integration**: Allow fetching and displaying comment threads from Hacker News and Lobste.rs when available for articles.
 
 The app remains a single binary with an embedded database (SQLite) for easy deployment.

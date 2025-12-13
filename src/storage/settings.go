@@ -18,13 +18,12 @@ func settingsDefaults() map[string]interface{} {
 		"refresh_rate":      0,
 		"sidebar_collapsed": false,
 		"ai_api_key":        "",
-		"ai_api_url":        "https://api.aimlapi.com/v1/chat/completions",
-		"ai_model":          "gpt-4o-mini",
+		"ai_api_url":        "https://openrouter.ai/api/v1/chat/completions",
+		"ai_model":          "x-ai/grok-4.1-fast",
 		"ai_personality":    "You are a helpful, knowledgeable assistant that provides clear and concise responses.",
 		"ai_explain_prompt": "Please explain this text in a clear and easy-to-understand way:",
 		"ai_summarize_prompt": "Please provide a concise summary of this text:",
 		"ai_enable_article_summary": true,
-		"ai_enable_feed_summary": true,
 		"ai_enable_chat": true,
 		"ai_enable_text_actions": true,
 	}
@@ -121,7 +120,7 @@ func (s *Storage) GetAIAPIURL() string {
 			return str
 		}
 	}
-	return "https://api.aimlapi.com/v1/chat/completions"
+	return "https://openrouter.ai/api/v1/chat/completions"
 }
 
 func (s *Storage) GetAIModel() string {
@@ -131,7 +130,7 @@ func (s *Storage) GetAIModel() string {
 			return str
 		}
 	}
-	return "gpt-4o-mini"
+	return "x-ai/grok-4.1-fast"
 }
 
 func (s *Storage) GetAIPrompt() string {
@@ -176,16 +175,6 @@ func (s *Storage) GetAISummarizePrompt() string {
 
 func (s *Storage) IsAIArticleSummaryEnabled() bool {
 	val := s.GetSettingsValue("ai_enable_article_summary")
-	if val != nil {
-		if enabled, ok := val.(bool); ok {
-			return enabled
-		}
-	}
-	return true
-}
-
-func (s *Storage) IsAIFeedSummaryEnabled() bool {
-	val := s.GetSettingsValue("ai_enable_feed_summary")
 	if val != nil {
 		if enabled, ok := val.(bool); ok {
 			return enabled

@@ -236,9 +236,6 @@ var vm = new Vue({
       'itemSelectedLobstersDiscussion': '',
       'itemSelectedSummary': '',
       'summaryError': '',
-      'feedSummary': '',
-      'feedSummaryError': '',
-      'feedSummaryTitle': '',
       'itemSearch': '',
       'itemSortNewestFirst': s.sort_newest_first,
       'itemListWidth': s.item_list_width || 300,
@@ -257,7 +254,6 @@ var vm = new Vue({
         'discussion': false,
         'lobstersDiscussion': false,
         'summary': false,
-        'feedSummary': false,
         'chat': false,
       },
       'fonts': ['', 'serif', 'monospace'],
@@ -269,14 +265,13 @@ var vm = new Vue({
       },
       'refreshRate': s.refresh_rate,
       'aiKey': s.ai_api_key || '',
-      'aiURL': s.ai_api_url || 'https://api.aimlapi.com/v1/chat/completions',
-      'aiModel': s.ai_model || 'gpt-4o-mini',
+      'aiURL': s.ai_api_url || 'https://openrouter.ai/api/v1/chat/completions',
+      'aiModel': s.ai_model || 'x-ai/grok-4.1-fast',
       'aiPrompt': s.ai_prompt || 'Please provide a concise summary (TL;DR) of the following article. Keep summaries between 2-4 sentences, highlighting the key points and important details:',
       'aiPersonality': s.ai_personality || 'You are a helpful, knowledgeable assistant that provides clear and concise responses.',
       'aiExplainPrompt': s.ai_explain_prompt || 'Please explain this text in a clear and easy-to-understand way:',
       'aiSummarizePrompt': s.ai_summarize_prompt || 'Please provide a concise summary of this text:',
       'aiEnableArticleSummary': s.ai_enable_article_summary !== undefined ? s.ai_enable_article_summary : true,
-      'aiEnableFeedSummary': s.ai_enable_feed_summary !== undefined ? s.ai_enable_feed_summary : true,
       'aiEnableChat': s.ai_enable_chat !== undefined ? s.ai_enable_chat : true,
       'aiEnableTextActions': s.ai_enable_text_actions !== undefined ? s.ai_enable_text_actions : true,
       'authenticated': app.authenticated,
@@ -381,27 +376,18 @@ var vm = new Vue({
       if (oldVal === undefined) return  // do nothing, initial setup
       api.settings.update({filter: newVal}).then(this.refreshItems.bind(this, false))
       this.itemSelected = null
-      // Clear feed summary when changing filter
-      this.feedSummary = ''
-      this.feedSummaryError = ''
       this.computeStats()
     },
     'feedSelected': function(newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
       api.settings.update({feed: newVal}).then(this.refreshItems.bind(this, false))
       this.itemSelected = null
-      // Clear feed summary when changing feeds
-      this.feedSummary = ''
-      this.feedSummaryError = ''
       if (this.$refs.itemlist) this.$refs.itemlist.scrollTop = 0
     },
     'itemSelected': function(newVal, oldVal) {
       this.itemSelectedReadability = ''
       this.itemSelectedSummary = ''
       this.summaryError = ''
-      // Clear feed summary when selecting an article
-      this.feedSummary = ''
-      this.feedSummaryError = ''
       if (newVal === null) {
         this.itemSelectedDetails = null
         return
@@ -1038,10 +1024,6 @@ var vm = new Vue({
       this.aiEnableArticleSummary = value
       api.settings.update({ai_enable_article_summary: value})
     },
-    updateAIEnableFeedSummary: function(value) {
-      this.aiEnableFeedSummary = value
-      api.settings.update({ai_enable_feed_summary: value})
-    },
     updateAIEnableChat: function(value) {
       this.aiEnableChat = value
       api.settings.update({ai_enable_chat: value})
@@ -1049,36 +1031,6 @@ var vm = new Vue({
     updateAIEnableTextActions: function(value) {
       this.aiEnableTextActions = value
       api.settings.update({ai_enable_text_actions: value})
-    },
-    summarizeFeed: function() {
-      var query = this.getItemsQuery()
-      this.loading.feedSummary = true
-      this.feedSummaryError = ''
-      // Clear previous feed summary content
-      this.feedSummary = ''
-      
-      // Convert string IDs to numbers for API
-      var folder_id = query.folder_id ? parseInt(query.folder_id) : null
-      var feed_id = query.feed_id ? parseInt(query.feed_id) : null
-      
-      api.summarize_feed(folder_id, feed_id, query.status, query.search).then(function(data) {
-        vm.loading.feedSummary = false
-        if (data.error) {
-          vm.feedSummaryError = data.error
-          vm.feedSummary = ''
-        } else {
-          // Clear current selection and show feed summary
-          vm.itemSelected = null
-          vm.itemSelectedDetails = null
-          vm.feedSummaryTitle = data.feed_title + ' - News Briefing (' + data.article_count + ' articles)'
-          vm.feedSummary = data.summary
-          vm.feedSummaryError = ''
-        }
-      }).catch(function(error) {
-        vm.loading.feedSummary = false
-        vm.feedSummaryError = 'Failed to generate feed summary: ' + error.message
-        vm.feedSummary = ''
-      })
     },
     toggleChatPanel: function() {
       this.chatPanelVisible = !this.chatPanelVisible

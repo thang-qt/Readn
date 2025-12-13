@@ -1140,13 +1140,12 @@ a,
         max-width: calc(100% - 120px); /* Reserve space for buttons */
     }
     
-    /* Keep buttons after search tightly packed */
-    #col-item-list .toolbar .toolbar-item[title="Mark All Read"],
-    #col-item-list .toolbar .toolbar-item[title="Generate Feed Briefing"] {
-        flex-shrink: 0 !important;
-        margin-left: 0.5rem !important;
-        margin-right: 0 !important;
-    }
+	    /* Keep buttons after search tightly packed */
+	    #col-item-list .toolbar .toolbar-item[title="Mark All Read"] {
+	        flex-shrink: 0 !important;
+	        margin-left: 0.5rem !important;
+	        margin-right: 0 !important;
+	    }
     
     #col-item-list .toolbar .settings-dropdown {
         flex-shrink: 0 !important;
