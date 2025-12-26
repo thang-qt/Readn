@@ -1,5 +1,5 @@
 const BASE_PATH = new URL(self.registration.scope).pathname.replace(/\/$/, '');
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const CACHE_NAME = `readn-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   `${BASE_PATH}/`,
@@ -64,12 +64,12 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  event.respondWith(
-    caches.match(request).then((cached) => {
-      if (cached) {
-        return cached;
-      }
-      return fetch(request)
+  // Use network-first strategy for root path to ensure fresh auth state
+  const isRootPath = path === `${BASE_PATH}/` || path === BASE_PATH;
+
+  if (isRootPath) {
+    event.respondWith(
+      fetch(request)
         .then((response) => {
           if (response && response.ok) {
             const copy = response.clone();
@@ -77,7 +77,25 @@ self.addEventListener('fetch', (event) => {
           }
           return response;
         })
-        .catch(() => cached);
-    }),
-  );
+        .catch(() => caches.match(request)),
+    );
+  } else {
+    // Cache-first for static assets
+    event.respondWith(
+      caches.match(request).then((cached) => {
+        if (cached) {
+          return cached;
+        }
+        return fetch(request)
+          .then((response) => {
+            if (response && response.ok) {
+              const copy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            }
+            return response;
+          })
+          .catch(() => cached);
+      }),
+    );
+  }
 });

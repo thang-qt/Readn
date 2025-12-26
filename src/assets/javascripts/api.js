@@ -15,6 +15,12 @@
       method: method,
       headers: headers,
       body: JSON.stringify(data),
+    }).then(function(response) {
+      if (response.status === 401) {
+        window.location.reload()
+        return Promise.reject(new Error('Unauthorized'))
+      }
+      return response
     })
   }
 
