@@ -22,27 +22,27 @@ function scrollto(target, scroll) {
   scroll.scrollTop = Math.round(newPos)
 }
 
-var debounce = function(callback, wait) {
+var debounce = function (callback, wait) {
   var timeout
-  return function() {
+  return function () {
     var ctx = this, args = arguments
     clearTimeout(timeout)
-    timeout = setTimeout(function() {
+    timeout = setTimeout(function () {
       callback.apply(ctx, args)
     }, wait)
   }
 }
 
 Vue.directive('scroll', {
-  inserted: function(el, binding) {
-    el.addEventListener('scroll', debounce(function(event) {
+  inserted: function (el, binding) {
+    el.addEventListener('scroll', debounce(function (event) {
       binding.value(event, el)
     }, 200))
   },
 })
 
 Vue.directive('focus', {
-  inserted: function(el) {
+  inserted: function (el) {
     el.focus()
   }
 })
@@ -50,20 +50,20 @@ Vue.directive('focus', {
 Vue.component('drag', {
   props: ['width'],
   template: '<div class="drag"></div>',
-  mounted: function() {
+  mounted: function () {
     var self = this
     var startX = undefined
     var initW = undefined
-    var onMouseMove = function(e) {
+    var onMouseMove = function (e) {
       var offset = e.clientX - startX
       var newWidth = initW + offset
       self.$emit('resize', newWidth)
     }
-    var onMouseUp = function(e) {
+    var onMouseUp = function (e) {
       document.removeEventListener('mousemove', onMouseMove)
       document.removeEventListener('mouseup', onMouseUp)
     }
-    this.$el.addEventListener('mousedown', function(e) {
+    this.$el.addEventListener('mousedown', function (e) {
       startX = e.clientX
       initW = self.width
       document.addEventListener('mousemove', onMouseMove)
@@ -74,8 +74,8 @@ Vue.component('drag', {
 
 Vue.component('dropdown', {
   props: ['class', 'toggle-class', 'ref', 'drop', 'title'],
-  data: function() {
-    return {open: false}
+  data: function () {
+    return { open: false }
   },
   template: `
     <div class="dropdown" :class="$attrs.class">
@@ -84,7 +84,7 @@ Vue.component('dropdown', {
     </div>
   `,
   computed: {
-    btnToggleClass: function() {
+    btnToggleClass: function () {
       var c = this.$props.toggleClass || ''
       c += ' dropdown-toggle dropdown-toggle-no-caret'
       c += this.open ? ' show' : ''
@@ -92,10 +92,10 @@ Vue.component('dropdown', {
     }
   },
   methods: {
-    toggle: function(e) {
+    toggle: function (e) {
       this.open ? this.hide() : this.show()
     },
-    show: function(e) {
+    show: function (e) {
       this.open = true
       this.$refs.menu.style.top = this.$refs.btn.offsetHeight + 'px'
       var drop = this.$props.drop
@@ -104,7 +104,7 @@ Vue.component('dropdown', {
         this.$refs.menu.style.left = 'auto'
         this.$refs.menu.style.right = '0'
       } else if (drop === 'center') {
-        this.$nextTick(function() {
+        this.$nextTick(function () {
           var btnWidth = this.$refs.btn.getBoundingClientRect().width
           var menuWidth = this.$refs.menu.getBoundingClientRect().width
           this.$refs.menu.style.left = '-' + ((menuWidth - btnWidth) / 2) + 'px'
@@ -113,11 +113,11 @@ Vue.component('dropdown', {
 
       document.addEventListener('click', this.clickHandler)
     },
-    hide: function() {
+    hide: function () {
       this.open = false
       document.removeEventListener('click', this.clickHandler)
     },
-    clickHandler: function(e) {
+    clickHandler: function (e) {
       var dropdown = e.target.closest('.dropdown')
       if (dropdown == null || dropdown != this.$el) return this.hide()
       if (e.target.closest('.dropdown-item') != null) return this.hide()
@@ -138,11 +138,11 @@ Vue.component('modal', {
       </div>
     </div>
   `,
-  data: function() {
-    return {opening: false}
+  data: function () {
+    return { opening: false }
   },
   watch: {
-    'open': function(newVal) {
+    'open': function (newVal) {
       if (newVal) {
         this.opening = true
         document.addEventListener('click', this.handleClick)
@@ -152,7 +152,7 @@ Vue.component('modal', {
     },
   },
   methods: {
-    handleClick: function(e) {
+    handleClick: function (e) {
       if (this.opening) {
         this.opening = false
         return
@@ -175,7 +175,7 @@ function dateRepr(d) {
   else if (sec < 604800)  // less than a week
     out = Math.round(sec / 86400) + 'd'
   else
-    out = d.toLocaleDateString(undefined, {year: "numeric", month: "long", day: "numeric"})
+    out = d.toLocaleDateString(undefined, { year: "numeric", month: "long", day: "numeric" })
 
   if (neg) return '-' + out
   return out
@@ -183,7 +183,7 @@ function dateRepr(d) {
 
 Vue.component('relative-time', {
   props: ['val'],
-  data: function() {
+  data: function () {
     var d = new Date(this.val)
     return {
       'date': d,
@@ -192,30 +192,36 @@ Vue.component('relative-time', {
     }
   },
   template: '<time :datetime="val">{{ formatted }}</time>',
-  mounted: function() {
-    this.interval = setInterval(function() {
+  mounted: function () {
+    this.interval = setInterval(function () {
       this.formatted = dateRepr(this.date)
     }.bind(this), 600000)  // every 10 minutes
   },
-  destroyed: function() {
+  destroyed: function () {
     clearInterval(this.interval)
   },
 })
 
 var vm = new Vue({
-  created: function() {
+  created: function () {
     this.refreshStats()
       .then(this.refreshFeeds.bind(this))
       .then(this.refreshItems.bind(this, false))
 
-    api.feeds.list_errors().then(function(errors) {
+    api.feeds.list_errors().then(function (errors) {
       vm.feed_errors = errors
+    }).catch(function () {
+      // Ignore errors on initial load
     })
   },
-  mounted: function() {
+  mounted: function () {
     this.initTextSelection()
+
+    // Listen for online/offline events
+    window.addEventListener('online', this.handleOnline)
+    window.addEventListener('offline', this.handleOffline)
   },
-  data: function() {
+  data: function () {
     var s = app.settings
     return {
       'filterSelected': s.filter,
@@ -281,31 +287,32 @@ var vm = new Vue({
       'chatMessages': [],
       'chatInput': '',
       'chatContext': '',
+      'isOffline': false,
     }
   },
   computed: {
-    foldersWithFeeds: function() {
-      var feedsByFolders = this.feeds.reduce(function(folders, feed) {
+    foldersWithFeeds: function () {
+      var feedsByFolders = this.feeds.reduce(function (folders, feed) {
         if (!folders[feed.folder_id])
           folders[feed.folder_id] = [feed]
         else
           folders[feed.folder_id].push(feed)
         return folders
       }, {})
-      var folders = this.folders.slice().map(function(folder) {
+      var folders = this.folders.slice().map(function (folder) {
         folder.feeds = feedsByFolders[folder.id]
         return folder
       })
-      folders.push({id: null, feeds: feedsByFolders[null]})
+      folders.push({ id: null, feeds: feedsByFolders[null] })
       return folders
     },
-    feedsById: function() {
-      return this.feeds.reduce(function(acc, f) { acc[f.id] = f; return acc }, {})
+    feedsById: function () {
+      return this.feeds.reduce(function (acc, f) { acc[f.id] = f; return acc }, {})
     },
-    foldersById: function() {
-      return this.folders.reduce(function(acc, f) { acc[f.id] = f; return acc }, {})
+    foldersById: function () {
+      return this.folders.reduce(function (acc, f) { acc[f.id] = f; return acc }, {})
     },
-    current: function() {
+    current: function () {
       var parts = (this.feedSelected || '').split(':', 2)
       var type = parts[0]
       var guid = parts[1]
@@ -317,9 +324,9 @@ var vm = new Vue({
       if (type == 'folder')
         folder = this.foldersById[guid] || {}
 
-      return {type: type, feed: feed, folder: folder}
+      return { type: type, feed: feed, folder: folder }
     },
-    itemSelectedContent: function() {
+    itemSelectedContent: function () {
       if (!this.itemSelected) return ''
 
       if (this.itemSelectedHNDiscussion)
@@ -333,15 +340,15 @@ var vm = new Vue({
 
       return this.itemSelectedDetails.content || ''
     },
-    contentImages: function() {
+    contentImages: function () {
       if (!this.itemSelectedDetails) return []
       return (this.itemSelectedDetails.media_links || []).filter(l => l.type === 'image')
     },
-    contentAudios: function() {
+    contentAudios: function () {
       if (!this.itemSelectedDetails) return []
       return (this.itemSelectedDetails.media_links || []).filter(l => l.type === 'audio')
     },
-    contentVideos: function() {
+    contentVideos: function () {
       if (!this.itemSelectedDetails) return []
       return (this.itemSelectedDetails.media_links || []).filter(l => l.type === 'video')
     }
@@ -349,7 +356,7 @@ var vm = new Vue({
   watch: {
     'theme': {
       deep: true,
-      handler: function(theme) {
+      handler: function (theme) {
         document.body.classList.value = 'theme-' + theme.name
         api.settings.update({
           theme_name: theme.name,
@@ -360,31 +367,31 @@ var vm = new Vue({
     },
     'feedStats': {
       deep: true,
-      handler: debounce(function() {
+      handler: debounce(function () {
         var title = TITLE
-        var unreadCount = Object.values(this.feedStats).reduce(function(acc, stat) {
+        var unreadCount = Object.values(this.feedStats).reduce(function (acc, stat) {
           return acc + stat.unread
         }, 0)
         if (unreadCount) {
-          title += ' ('+unreadCount+')'
+          title += ' (' + unreadCount + ')'
         }
         document.title = title
         this.computeStats()
       }, 500),
     },
-    'filterSelected': function(newVal, oldVal) {
+    'filterSelected': function (newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
-      api.settings.update({filter: newVal}).then(this.refreshItems.bind(this, false))
+      api.settings.update({ filter: newVal }).then(this.refreshItems.bind(this, false))
       this.itemSelected = null
       this.computeStats()
     },
-    'feedSelected': function(newVal, oldVal) {
+    'feedSelected': function (newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
-      api.settings.update({feed: newVal}).then(this.refreshItems.bind(this, false))
+      api.settings.update({ feed: newVal }).then(this.refreshItems.bind(this, false))
       this.itemSelected = null
       if (this.$refs.itemlist) this.$refs.itemlist.scrollTop = 0
     },
-    'itemSelected': function(newVal, oldVal) {
+    'itemSelected': function (newVal, oldVal) {
       this.itemSelectedReadability = ''
       this.itemSelectedSummary = ''
       this.summaryError = ''
@@ -394,42 +401,42 @@ var vm = new Vue({
       }
       if (this.$refs.content) this.$refs.content.scrollTop = 0
 
-      api.items.get(newVal).then(function(item) {
+      api.items.get(newVal).then(function (item) {
         this.itemSelectedDetails = item
         if (this.itemSelectedDetails.status == 'unread') {
-          api.items.update(this.itemSelectedDetails.id, {status: 'read'}).then(function() {
+          api.items.update(this.itemSelectedDetails.id, { status: 'read' }).then(function () {
             this.feedStats[this.itemSelectedDetails.feed_id].unread -= 1
-            var itemInList = this.items.find(function(i) { return i.id == item.id })
+            var itemInList = this.items.find(function (i) { return i.id == item.id })
             if (itemInList) itemInList.status = 'read'
             this.itemSelectedDetails.status = 'read'
           }.bind(this))
         }
       }.bind(this))
     },
-    'itemSearch': debounce(function(newVal) {
+    'itemSearch': debounce(function (newVal) {
       this.refreshItems()
     }, 500),
-    'itemSortNewestFirst': function(newVal, oldVal) {
+    'itemSortNewestFirst': function (newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
-      api.settings.update({sort_newest_first: newVal}).then(vm.refreshItems.bind(this, false))
+      api.settings.update({ sort_newest_first: newVal }).then(vm.refreshItems.bind(this, false))
     },
-    'feedListWidth': debounce(function(newVal, oldVal) {
+    'feedListWidth': debounce(function (newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
-      api.settings.update({feed_list_width: newVal})
+      api.settings.update({ feed_list_width: newVal })
     }, 1000),
-    'itemListWidth': debounce(function(newVal, oldVal) {
+    'itemListWidth': debounce(function (newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
-      api.settings.update({item_list_width: newVal})
+      api.settings.update({ item_list_width: newVal })
     }, 1000),
-    'refreshRate': function(newVal, oldVal) {
+    'refreshRate': function (newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
-      api.settings.update({refresh_rate: newVal})
+      api.settings.update({ refresh_rate: newVal })
     },
-    'sidebarCollapsed': function(newVal, oldVal) {
+    'sidebarCollapsed': function (newVal, oldVal) {
       if (oldVal === undefined) return  // do nothing, initial setup
-      api.settings.update({sidebar_collapsed: newVal})
+      api.settings.update({ sidebar_collapsed: newVal })
     },
-    'itemSelected': function(newVal, oldVal) {
+    'itemSelected': function (newVal, oldVal) {
       this.itemSelectedReadability = ''
       this.itemSelectedHNDiscussion = ''
       this.itemSelectedDiscussion = ''
@@ -446,43 +453,59 @@ var vm = new Vue({
       }
       if (this.$refs.content) this.$refs.content.scrollTop = 0
 
-      api.items.get(newVal).then(function(item) {
+      api.items.get(newVal).then(function (item) {
         vm.itemSelectedDetails = item
         if (vm.itemSelectedDetails.status == 'unread') {
-          api.items.update(vm.itemSelectedDetails.id, {status: 'read'}).then(function() {
+          api.items.update(vm.itemSelectedDetails.id, { status: 'read' }).then(function () {
             vm.feedStats[vm.itemSelectedDetails.feed_id].unread -= 1
-            var itemInList = vm.items.find(function(i) { return i.id == item.id })
+            var itemInList = vm.items.find(function (i) { return i.id == item.id })
             if (itemInList) itemInList.status = 'read'
             vm.itemSelectedDetails.status = 'read'
           })
         }
       })
     },
-    'apiKey': function(newVal, oldVal) {
+    'apiKey': function (newVal, oldVal) {
       if (oldVal === undefined) return
-      api.settings.update({summary_api_key: newVal})
+      api.settings.update({ summary_api_key: newVal })
     },
   },
   methods: {
-    refreshStats: function(loopMode) {
-      return api.status().then(function(data) {
+    refreshStats: function (loopMode) {
+      return api.status().then(function (data) {
+        vm.isOffline = false
         if (loopMode && !vm.itemSelected) vm.refreshItems()
 
         vm.loading.feeds = data.running
         if (data.running) {
           setTimeout(vm.refreshStats.bind(vm, true), 500)
         }
-        vm.feedStats = data.stats.reduce(function(acc, stat) {
+        vm.feedStats = data.stats.reduce(function (acc, stat) {
           acc[stat.feed_id] = stat
           return acc
         }, {})
 
-        api.feeds.list_errors().then(function(errors) {
+        api.feeds.list_errors().then(function (errors) {
           vm.feed_errors = errors
         })
+      }).catch(function (error) {
+        vm.isOffline = true
+        console.log('Offline or network error:', error.message)
       })
     },
-    getItemsQuery: function() {
+    retryConnection: function () {
+      this.isOffline = false
+      this.refreshStats()
+        .then(this.refreshFeeds.bind(this))
+        .then(this.refreshItems.bind(this, false))
+    },
+    handleOnline: function () {
+      this.retryConnection()
+    },
+    handleOffline: function () {
+      this.isOffline = true
+    },
+    getItemsQuery: function () {
       var query = {}
       if (this.feedSelected) {
         var parts = this.feedSelected.split(':', 2)
@@ -505,15 +528,15 @@ var vm = new Vue({
       }
       return query
     },
-    refreshFeeds: function() {
+    refreshFeeds: function () {
       return Promise
         .all([api.folders.list(), api.feeds.list()])
-        .then(function(values) {
+        .then(function (values) {
           vm.folders = values[0]
           vm.feeds = values[1]
         })
     },
-    refreshItems: function(loadMore = false) {
+    refreshItems: function (loadMore = false) {
       if (this.feedSelected === null) {
         vm.items = []
         vm.itemsHasMore = false
@@ -522,11 +545,11 @@ var vm = new Vue({
 
       var query = this.getItemsQuery()
       if (loadMore) {
-        query.after = vm.items[vm.items.length-1].id
+        query.after = vm.items[vm.items.length - 1].id
       }
 
       this.loading.items = true
-      return api.items.list(query).then(function(data) {
+      return api.items.list(query).then(function (data) {
         if (loadMore) {
           vm.items = vm.items.concat(data.list)
         } else {
@@ -536,14 +559,14 @@ var vm = new Vue({
         vm.loading.items = false
 
         // load more if there's some space left at the bottom of the item list.
-        vm.$nextTick(function() {
+        vm.$nextTick(function () {
           if (vm.itemsHasMore && !vm.loading.items && vm.itemListCloseToBottom()) {
             vm.refreshItems(true)
           }
         })
       })
     },
-    itemListCloseToBottom: function() {
+    itemListCloseToBottom: function () {
       // approx. vertical space at the bottom of the list (loading el & paddings) when 1rem = 16px
       var bottomSpace = 70
       var scale = (parseFloat(getComputedStyle(document.documentElement).fontSize) || 16) / 16
@@ -555,57 +578,57 @@ var vm = new Vue({
       var closeToBottom = (el.scrollHeight - el.scrollTop - el.offsetHeight) < bottomSpace * scale
       return closeToBottom
     },
-    loadMoreItems: function(event, el) {
+    loadMoreItems: function (event, el) {
       if (!this.itemsHasMore) return
       if (this.loading.items) return
       if (this.itemListCloseToBottom()) return this.refreshItems(true)
       if (this.itemSelected && this.itemSelected === this.items[this.items.length - 1].id) return this.refreshItems(true)
     },
-    markItemsRead: function() {
+    markItemsRead: function () {
       var query = this.getItemsQuery()
-      api.items.mark_read(query).then(function() {
+      api.items.mark_read(query).then(function () {
         vm.items = []
-        vm.itemsPage = {'cur': 1, 'num': 1}
+        vm.itemsPage = { 'cur': 1, 'num': 1 }
         vm.itemSelected = null
         vm.itemsHasMore = false
         vm.refreshStats()
       })
     },
-    toggleFolderExpanded: function(folder) {
+    toggleFolderExpanded: function (folder) {
       folder.is_expanded = !folder.is_expanded
-      api.folders.update(folder.id, {is_expanded: folder.is_expanded})
+      api.folders.update(folder.id, { is_expanded: folder.is_expanded })
     },
-    formatDate: function(datestr) {
+    formatDate: function (datestr) {
       var options = {
         year: "numeric", month: "long", day: "numeric",
         hour: '2-digit', minute: '2-digit',
       }
       return new Date(datestr).toLocaleDateString(undefined, options)
     },
-    moveFeed: function(feed, folder) {
+    moveFeed: function (feed, folder) {
       var folder_id = folder ? folder.id : null
-      api.feeds.update(feed.id, {folder_id: folder_id}).then(function() {
+      api.feeds.update(feed.id, { folder_id: folder_id }).then(function () {
         feed.folder_id = folder_id
         vm.refreshStats()
       })
     },
-    moveFeedToNewFolder: function(feed) {
+    moveFeedToNewFolder: function (feed) {
       var title = prompt('Enter folder name:')
       if (!title) return
-      api.folders.create({'title': title}).then(function(folder) {
-        api.feeds.update(feed.id, {folder_id: folder.id}).then(function() {
-          vm.refreshFeeds().then(function() {
+      api.folders.create({ 'title': title }).then(function (folder) {
+        api.feeds.update(feed.id, { folder_id: folder.id }).then(function () {
+          vm.refreshFeeds().then(function () {
             vm.refreshStats()
           })
         })
       })
     },
-    createNewFeedFolder: function() {
+    createNewFeedFolder: function () {
       var title = prompt('Enter folder name:')
       if (!title) return
-      api.folders.create({'title': title}).then(function(result) {
-        vm.refreshFeeds().then(function() {
-          vm.$nextTick(function() {
+      api.folders.create({ 'title': title }).then(function (result) {
+        vm.refreshFeeds().then(function () {
+          vm.$nextTick(function () {
             if (vm.$refs.newFeedFolder) {
               vm.$refs.newFeedFolder.value = result.id
             }
@@ -613,52 +636,52 @@ var vm = new Vue({
         })
       })
     },
-    renameFolder: function(folder) {
+    renameFolder: function (folder) {
       var newTitle = prompt('Enter new title', folder.title)
       if (newTitle) {
-        api.folders.update(folder.id, {title: newTitle}).then(function() {
+        api.folders.update(folder.id, { title: newTitle }).then(function () {
           folder.title = newTitle
-          this.folders.sort(function(a, b) {
+          this.folders.sort(function (a, b) {
             return a.title.localeCompare(b.title)
           })
         }.bind(this))
       }
     },
-    deleteFolder: function(folder) {
+    deleteFolder: function (folder) {
       if (confirm('Are you sure you want to delete ' + folder.title + '?')) {
-        api.folders.delete(folder.id).then(function() {
+        api.folders.delete(folder.id).then(function () {
           vm.feedSelected = null
           vm.refreshStats()
           vm.refreshFeeds()
         })
       }
     },
-    updateFeedLink: function(feed) {
+    updateFeedLink: function (feed) {
       var newLink = prompt('Enter feed link', feed.feed_link)
       if (newLink) {
-        api.feeds.update(feed.id, {feed_link: newLink}).then(function() {
+        api.feeds.update(feed.id, { feed_link: newLink }).then(function () {
           feed.feed_link = newLink
         })
       }
     },
-    renameFeed: function(feed) {
+    renameFeed: function (feed) {
       var newTitle = prompt('Enter new title', feed.title)
       if (newTitle) {
-        api.feeds.update(feed.id, {title: newTitle}).then(function() {
+        api.feeds.update(feed.id, { title: newTitle }).then(function () {
           feed.title = newTitle
         })
       }
     },
-    deleteFeed: function(feed) {
+    deleteFeed: function (feed) {
       if (confirm('Are you sure you want to delete ' + feed.title + '?')) {
-        api.feeds.delete(feed.id).then(function() {
+        api.feeds.delete(feed.id).then(function () {
           vm.feedSelected = null
           vm.refreshStats()
           vm.refreshFeeds()
         })
       }
     },
-    createFeed: function(event) {
+    createFeed: function (event) {
       var form = event.target
       var data = {
         url: form.querySelector('input[name=url]').value,
@@ -668,7 +691,7 @@ var vm = new Vue({
         data.url = this.feedNewChoiceSelected
       }
       this.loading.newfeed = true
-      api.feeds.create(data).then(function(result) {
+      api.feeds.create(data).then(function (result) {
         if (result.status === 'success') {
           vm.refreshFeeds()
           vm.refreshStats()
@@ -683,47 +706,47 @@ var vm = new Vue({
         vm.loading.newfeed = false
       })
     },
-    toggleItemStatus: function(item, targetstatus, fallbackstatus) {
+    toggleItemStatus: function (item, targetstatus, fallbackstatus) {
       var oldstatus = item.status
       var newstatus = item.status !== targetstatus ? targetstatus : fallbackstatus
 
-      var updateStats = function(status, incr) {
+      var updateStats = function (status, incr) {
         if ((status == 'unread') || (status == 'starred')) {
           this.feedStats[item.feed_id][status] += incr
         }
       }.bind(this)
 
-      api.items.update(item.id, {status: newstatus}).then(function() {
+      api.items.update(item.id, { status: newstatus }).then(function () {
         updateStats(oldstatus, -1)
         updateStats(newstatus, +1)
 
-        var itemInList = this.items.find(function(i) { return i.id == item.id })
+        var itemInList = this.items.find(function (i) { return i.id == item.id })
         if (itemInList) itemInList.status = newstatus
         item.status = newstatus
       }.bind(this))
     },
-    toggleItemStarred: function(item) {
+    toggleItemStarred: function (item) {
       this.toggleItemStatus(item, 'starred', 'read')
     },
-    toggleItemRead: function(item) {
+    toggleItemRead: function (item) {
       this.toggleItemStatus(item, 'unread', 'read')
     },
-    importOPML: function(event) {
+    importOPML: function (event) {
       var input = event.target
       var form = document.querySelector('#opml-import-form')
       this.$refs.menuDropdown.hide()
-      api.upload_opml(form).then(function() {
+      api.upload_opml(form).then(function () {
         input.value = ''
         vm.refreshFeeds()
         vm.refreshStats()
       })
     },
-    logout: function() {
-      api.logout().then(function() {
+    logout: function () {
+      api.logout().then(function () {
         document.location.reload()
       })
     },
-    toggleReadability: function() {
+    toggleReadability: function () {
       if (this.itemSelectedReadability) {
         this.itemSelectedReadability = null
         return
@@ -732,46 +755,46 @@ var vm = new Vue({
       this.itemSelectedHNDiscussion = ''
       this.itemSelectedDiscussion = ''
       this.itemSelectedDiscussionProvider = ''
-      
+
       var item = this.itemSelectedDetails
       if (!item) return
       if (item.link) {
         this.loading.readability = true
-        api.crawl(item.link).then(function(data) {
+        api.crawl(item.link).then(function (data) {
           vm.itemSelectedReadability = data && data.content
           vm.loading.readability = false
         })
       }
     },
-    isHackerNewsItem: function(item) {
+    isHackerNewsItem: function (item) {
       if (!item) return false
       var isHNFeed = item.link && (item.link.includes('news.ycombinator.com') || item.link.includes('ycombinator.com'))
       var hasHNDiscussion = item.content && item.content.includes('news.ycombinator.com/item?id=')
       return isHNFeed || hasHNDiscussion
     },
-    getDiscussionProvider: function(item) {
+    getDiscussionProvider: function (item) {
       if (!item) return null
-      
+
       // Check for HackerNews
       var isHNFeed = item.link && (item.link.includes('news.ycombinator.com') || item.link.includes('ycombinator.com'))
       var hasHNDiscussion = item.content && item.content.includes('news.ycombinator.com/item?id=')
       if (isHNFeed || hasHNDiscussion) return 'hackernews'
-      
+
       // Check for Lobsters
       var isLobstersFeed = item.link && item.link.includes('lobste.rs/s/')
       var hasLobstersDiscussion = item.content && item.content.includes('lobste.rs/s/')
       if (isLobstersFeed || hasLobstersDiscussion) return 'lobsters'
-      
+
       return null
     },
-    getDiscussionLink: function(item) {
+    getDiscussionLink: function (item) {
       if (!item) return { provider: null, discussionUrl: '', targetUrl: '' }
       var provider = this.getDiscussionProvider(item)
-      
+
       // Default values
       var discussionUrl = ''
       var targetUrl = item.url || item.link || ''
-      
+
       if (provider === 'hackernews') {
         var re = /https?:\/\/news\.ycombinator\.com\/item\?id=\d+/
         if (item.content && re.test(item.content)) {
@@ -794,104 +817,104 @@ var vm = new Vue({
       if (discussionUrl && targetUrl === discussionUrl) {
         targetUrl = ''
       }
-      
+
       return { provider: provider, discussionUrl: discussionUrl, targetUrl: targetUrl }
     },
-    providerLabel: function(provider) {
+    providerLabel: function (provider) {
       if (provider === 'hackernews') return 'Hacker News'
       if (provider === 'lobsters') return 'Lobsters'
       return ''
     },
-    providerMentionedInFeedTitle: function(item, provider) {
+    providerMentionedInFeedTitle: function (item, provider) {
       if (!item) return false
       var feedTitle = ((this.feedsById[item.feed_id] || {}).title || '').trim().toLowerCase()
       var label = this.providerLabel(provider).trim().toLowerCase()
       return feedTitle && label && feedTitle.indexOf(label) !== -1
     },
-    hasDiscussion: function(item) {
+    hasDiscussion: function (item) {
       return this.getDiscussionProvider(item) !== null
     },
-    toggleDiscussion: function() {
+    toggleDiscussion: function () {
       if (this.itemSelectedDiscussion) {
         this.itemSelectedDiscussion = ''
         this.itemSelectedDiscussionProvider = ''
         return
       }
-      
+
       var item = this.itemSelectedDetails
       if (!item) return
-      
+
       var provider = this.getDiscussionProvider(item)
       if (!provider) return
-      
+
       // Clear readability when activating discussion
       this.itemSelectedReadability = ''
-      
+
       this.loading.discussion = true
       var vm = this
-      
+
       var apiCall = provider === 'hackernews' ? api.hackernews : api.lobsters
-      
+
       apiCall({
         content: item.content || '',
         url: item.link || ''
-      }).then(function(data) {
+      }).then(function (data) {
         vm.itemSelectedDiscussion = data && data.html
         vm.itemSelectedDiscussionProvider = provider
         vm.loading.discussion = false
-        
+
         // Initialize discussion controls after content is loaded
-        vm.$nextTick(function() {
+        vm.$nextTick(function () {
           vm.initDiscussionControls()
         })
-      }).catch(function(error) {
+      }).catch(function (error) {
         console.error('Discussion load error:', error)
         vm.loading.discussion = false
       })
     },
-    toggleHNDiscussion: function() {
+    toggleHNDiscussion: function () {
       if (this.itemSelectedHNDiscussion) {
         this.itemSelectedHNDiscussion = ''
         return
       }
       // Clear readability when activating HN discussion
       this.itemSelectedReadability = ''
-      
+
       var item = this.itemSelectedDetails
       if (!item) return
-      
+
       this.loading.hnDiscussion = true
       var vm = this
-      
+
       api.hackernews({
         content: item.content || '',
         url: item.link || ''
-      }).then(function(data) {
+      }).then(function (data) {
         vm.itemSelectedHNDiscussion = data && data.html
         vm.loading.hnDiscussion = false
-        
+
         // Add HN navigation functionality after content loads
-        vm.$nextTick(function() {
+        vm.$nextTick(function () {
           vm.initDiscussionControls()
         })
-      }).catch(function(error) {
+      }).catch(function (error) {
         console.error('Error fetching HN discussion:', error)
         vm.loading.hnDiscussion = false
       })
     },
-    initDiscussionControls: function() {
+    initDiscussionControls: function () {
       // Initialize generic discussion controls after content is loaded
       var vm = this
-      
+
       // Global functions for discussion controls (attached to window for onclick handlers)
-      window.discussionToggleComment = function(button) {
+      window.discussionToggleComment = function (button) {
         var comment = button.closest('.discussion-comment')
         var commentBody = comment.querySelector('.discussion-comment-body')
         var repliesContainer = comment.querySelector('.discussion-comment-replies')
         var isCollapsed = comment.classList.contains('collapsed')
         var expandedIcon = button.querySelector('.discussion-toggle-icon-expanded')
         var collapsedIcon = button.querySelector('.discussion-toggle-icon-collapsed')
-        
+
         if (isCollapsed) {
           // Expand this comment
           commentBody.style.display = ''
@@ -914,13 +937,13 @@ var vm = new Vue({
           comment.classList.add('collapsed')
         }
       }
-      
-      window.discussionNextComment = function(button) {
+
+      window.discussionNextComment = function (button) {
         var currentComment = button.closest('.discussion-comment')
         var currentLevel = parseInt(currentComment.dataset.level)
         var allComments = Array.from(document.querySelectorAll('.discussion-comment'))
         var currentIndex = allComments.indexOf(currentComment)
-        
+
         if (currentLevel === 0) {
           // For top-level comments, find next top-level comment
           for (var i = currentIndex + 1; i < allComments.length; i++) {
@@ -942,13 +965,13 @@ var vm = new Vue({
           }
         }
       }
-      
-      window.discussionPrevComment = function(button) {
+
+      window.discussionPrevComment = function (button) {
         var currentComment = button.closest('.discussion-comment')
         var currentLevel = parseInt(currentComment.dataset.level)
         var allComments = Array.from(document.querySelectorAll('.discussion-comment'))
         var currentIndex = allComments.indexOf(currentComment)
-        
+
         if (currentLevel === 0) {
           // For top-level comments, find previous top-level comment
           for (var i = currentIndex - 1; i >= 0; i--) {
@@ -970,17 +993,17 @@ var vm = new Vue({
           }
         }
       }
-      
+
       // Backward compatibility - keep old HN function names working
       window.hnToggleComment = window.discussionToggleComment
       window.hnNextComment = window.discussionNextComment
       window.hnPrevComment = window.discussionPrevComment
-      
+
       // Helper function to check if comment is hidden
-      this.isCommentHidden = function(comment) {
+      this.isCommentHidden = function (comment) {
         // Check if comment itself is hidden via display:none
         if (comment.style.display === 'none') return true
-        
+
         // Check if any parent comment is collapsed
         var parent = comment.parentElement
         while (parent && parent !== document) {
@@ -992,21 +1015,21 @@ var vm = new Vue({
           }
           parent = parent.parentElement
         }
-        
+
         return false
       }
-      
+
       // Helper function to scroll to and highlight a comment
-      this.scrollToComment = function(comment) {
+      this.scrollToComment = function (comment) {
         comment.scrollIntoView({ behavior: 'smooth', block: 'start' })
         // Highlight briefly
         comment.style.backgroundColor = '#fffbf0'
-        setTimeout(function() {
+        setTimeout(function () {
           comment.style.backgroundColor = ''
         }, 1000)
       }
     },
-    toggleSummary: function() {
+    toggleSummary: function () {
       if (this.itemSelectedSummary) {
         this.itemSelectedSummary = ''
         this.summaryError = ''
@@ -1014,76 +1037,76 @@ var vm = new Vue({
       }
       var item = this.itemSelectedDetails
       if (!item) return
-      
+
       var content = this.itemSelectedContent
       if (!content) {
         this.summaryError = 'No content available to summarize'
         return
       }
-      
+
       this.loading.summary = true
       this.summaryError = ''
-      
-      api.summarize(content, item.title).then(function(data) {
+
+      api.summarize(content, item.title).then(function (data) {
         vm.loading.summary = false
         if (data.error) {
           vm.summaryError = data.error
         } else {
           vm.itemSelectedSummary = data.summary
         }
-      }).catch(function(error) {
+      }).catch(function (error) {
         vm.loading.summary = false
         vm.summaryError = 'Failed to generate summary: ' + error.message
       })
     },
-    updateAIKey: function(value) {
+    updateAIKey: function (value) {
       this.aiKey = value
-      api.settings.update({ai_api_key: value})
+      api.settings.update({ ai_api_key: value })
     },
-    updateAIURL: function(value) {
+    updateAIURL: function (value) {
       this.aiURL = value
-      api.settings.update({ai_api_url: value})
+      api.settings.update({ ai_api_url: value })
     },
-    updateAIModel: function(value) {
+    updateAIModel: function (value) {
       this.aiModel = value
-      api.settings.update({ai_model: value})
+      api.settings.update({ ai_model: value })
     },
-    updateAIPrompt: function(value) {
+    updateAIPrompt: function (value) {
       this.aiPrompt = value
-      api.settings.update({ai_prompt: value})
+      api.settings.update({ ai_prompt: value })
     },
-    updateAIPersonality: function(value) {
+    updateAIPersonality: function (value) {
       this.aiPersonality = value
-      api.settings.update({ai_personality: value})
+      api.settings.update({ ai_personality: value })
     },
-    updateAIExplainPrompt: function(value) {
+    updateAIExplainPrompt: function (value) {
       this.aiExplainPrompt = value
-      api.settings.update({ai_explain_prompt: value})
+      api.settings.update({ ai_explain_prompt: value })
     },
-    updateAISummarizePrompt: function(value) {
+    updateAISummarizePrompt: function (value) {
       this.aiSummarizePrompt = value
-      api.settings.update({ai_summarize_prompt: value})
+      api.settings.update({ ai_summarize_prompt: value })
     },
-    updateAIEnableArticleSummary: function(value) {
+    updateAIEnableArticleSummary: function (value) {
       this.aiEnableArticleSummary = value
-      api.settings.update({ai_enable_article_summary: value})
+      api.settings.update({ ai_enable_article_summary: value })
     },
-    updateAIEnableChat: function(value) {
+    updateAIEnableChat: function (value) {
       this.aiEnableChat = value
-      api.settings.update({ai_enable_chat: value})
+      api.settings.update({ ai_enable_chat: value })
     },
-    updateAIEnableTextActions: function(value) {
+    updateAIEnableTextActions: function (value) {
       this.aiEnableTextActions = value
-      api.settings.update({ai_enable_text_actions: value})
+      api.settings.update({ ai_enable_text_actions: value })
     },
-    toggleChatPanel: function() {
+    toggleChatPanel: function () {
       this.chatPanelVisible = !this.chatPanelVisible
       if (this.chatPanelVisible && this.chatMessages.length === 0) {
         // Clear chat when opening panel
         this.clearChat()
       }
       if (this.chatPanelVisible) {
-        this.$nextTick(function() {
+        this.$nextTick(function () {
           var chatContainer = vm.$refs.chatContainer
           if (chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight
@@ -1091,49 +1114,49 @@ var vm = new Vue({
         })
       }
     },
-    sendChatMessage: function() {
+    sendChatMessage: function () {
       if (!this.chatInput.trim() || this.loading.chat || !this.itemSelectedDetails) return
-      
+
       var messageContent = this.chatInput.trim()
-      
+
       // If there's context, include it in the message
       if (this.chatContext) {
         messageContent += '\n\nSelected text: "' + this.chatContext + '"'
       }
-      
+
       var userMessage = {
         role: 'user',
         content: messageContent
       }
-      
+
       this.chatMessages.push({
         role: 'user',
         content: this.chatInput.trim(),
         hasContext: !!this.chatContext,
         context: this.chatContext // Store the actual context text
       })
-      
+
       var messages = this.chatMessages.slice() // Copy for API call
       // Replace the last message with the full context version for API
       if (this.chatContext) {
         messages[messages.length - 1] = userMessage
       }
-      
+
       this.chatInput = ''
       this.chatContext = '' // Clear context after sending
       this.loading.chat = true
-      
+
       var item = this.itemSelectedDetails
       var content = this.itemSelectedContent
-      
-      this.$nextTick(function() {
+
+      this.$nextTick(function () {
         var chatContainer = vm.$refs.chatContainer
         if (chatContainer) {
           chatContainer.scrollTop = chatContainer.scrollHeight
         }
       })
-      
-      api.chat(messages, item.title, content).then(function(data) {
+
+      api.chat(messages, item.title, content).then(function (data) {
         vm.loading.chat = false
         if (data.error) {
           vm.chatMessages.push({
@@ -1146,19 +1169,19 @@ var vm = new Vue({
             content: data.response
           })
         }
-        vm.$nextTick(function() {
+        vm.$nextTick(function () {
           var chatContainer = vm.$refs.chatContainer
           if (chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight
           }
         })
-      }).catch(function(error) {
+      }).catch(function (error) {
         vm.loading.chat = false
         vm.chatMessages.push({
           role: 'assistant',
           content: 'Sorry, I encountered an error: ' + error.message
         })
-        vm.$nextTick(function() {
+        vm.$nextTick(function () {
           var chatContainer = vm.$refs.chatContainer
           if (chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight
@@ -1166,10 +1189,10 @@ var vm = new Vue({
         })
       })
     },
-    clearChat: function() {
+    clearChat: function () {
       this.chatMessages = []
     },
-    formatChatMessage: function(message) {
+    formatChatMessage: function (message) {
       // Use marked.js to render markdown
       if (typeof marked !== 'undefined') {
         // Convert literal \n strings to actual line breaks for markdown processing
@@ -1182,7 +1205,7 @@ var vm = new Vue({
       // Fallback to basic formatting
       return message.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')
     },
-    showSettings: function(settings) {
+    showSettings: function (settings) {
       this.settings = settings
 
       if (settings === 'create') {
@@ -1190,26 +1213,26 @@ var vm = new Vue({
         vm.feedNewChoiceSelected = ''
       }
     },
-    resizeFeedList: function(width) {
+    resizeFeedList: function (width) {
       this.feedListWidth = Math.min(Math.max(200, width), 700)
     },
-    resizeItemList: function(width) {
+    resizeItemList: function (width) {
       this.itemListWidth = Math.min(Math.max(200, width), 700)
     },
-    resetFeedChoice: function() {
+    resetFeedChoice: function () {
       this.feedNewChoice = []
       this.feedNewChoiceSelected = ''
     },
-    incrFont: function(x) {
+    incrFont: function (x) {
       this.theme.size = +(this.theme.size + (0.1 * x)).toFixed(1)
     },
-    fetchAllFeeds: function() {
+    fetchAllFeeds: function () {
       if (this.loading.feeds) return
-      api.feeds.refresh().then(function() {
+      api.feeds.refresh().then(function () {
         vm.refreshStats()
       })
     },
-    computeStats: function() {
+    computeStats: function () {
       var filter = this.filterSelected
       if (!filter) {
         this.filteredFeedStats = {}
@@ -1238,7 +1261,7 @@ var vm = new Vue({
       this.filteredTotalStats = statsTotal
     },
     // navigation helper, navigate relative to selected item
-    navigateToItem: function(relativePosition) {
+    navigateToItem: function (relativePosition) {
       let vm = this
       if (vm.itemSelected == null) {
         // if no item is selected, select first
@@ -1246,7 +1269,7 @@ var vm = new Vue({
         return
       }
 
-      var itemPosition = vm.items.findIndex(function(x) { return x.id === vm.itemSelected })
+      var itemPosition = vm.items.findIndex(function (x) { return x.id === vm.itemSelected })
       if (itemPosition === -1) {
         if (vm.items.length !== 0) vm.itemSelected = vm.items[0].id
         return
@@ -1257,7 +1280,7 @@ var vm = new Vue({
 
       vm.itemSelected = vm.items[newPosition].id
 
-      vm.$nextTick(function() {
+      vm.$nextTick(function () {
         var scroll = document.querySelector('#item-list-scroll')
 
         var handle = scroll.querySelector('input[type=radio]:checked')
@@ -1269,11 +1292,11 @@ var vm = new Vue({
       })
     },
     // navigation helper, navigate relative to selected feed
-    navigateToFeed: function(relativePosition) {
+    navigateToFeed: function (relativePosition) {
       let vm = this
       var navigationList = Array.from(document.querySelectorAll('#col-feed-list input[name=feed]'))
-        .filter(function(r) { return r.offsetParent !== null && r.value !== 'folder:null' })
-        .map(function(r) { return r.value })
+        .filter(function (r) { return r.offsetParent !== null && r.value !== 'folder:null' })
+        .map(function (r) { return r.value })
 
       var currentFeedPosition = navigationList.indexOf(vm.feedSelected)
 
@@ -1282,12 +1305,12 @@ var vm = new Vue({
         return
       }
 
-      var newPosition = currentFeedPosition+relativePosition
+      var newPosition = currentFeedPosition + relativePosition
       if (newPosition < 0 || newPosition >= navigationList.length) return
 
       vm.feedSelected = navigationList[newPosition]
 
-      vm.$nextTick(function() {
+      vm.$nextTick(function () {
         var scroll = document.querySelector('#feed-list-scroll')
 
         var handle = scroll.querySelector('input[type=radio]:checked')
@@ -1296,53 +1319,53 @@ var vm = new Vue({
         if (target && scroll) scrollto(target, scroll)
       })
     },
-    toggleSidebarCollapsed: function() {
+    toggleSidebarCollapsed: function () {
       this.sidebarCollapsed = !this.sidebarCollapsed
     },
-    
+
     // Text selection for AI chat functionality
-    initTextSelection: function() {
+    initTextSelection: function () {
       var self = this
       var selectedText = ''
       var tooltipJustShown = false
-      
+
       // Handle text selection
-      document.addEventListener('mouseup', function(e) {
+      document.addEventListener('mouseup', function (e) {
         var tooltip = document.getElementById('ai-tooltip')
         if (!tooltip) return
-        
+
         var selection = window.getSelection()
         if (!selection.rangeCount || selection.isCollapsed) {
           tooltip.classList.remove('show')
           return
         }
-        
+
         var range = selection.getRangeAt(0)
         var contentArea = document.querySelector('.content')
-        
+
         // Check if selection is within content area
         if (!contentArea || !contentArea.contains(range.commonAncestorContainer)) {
           tooltip.classList.remove('show')
           return
         }
-        
+
         selectedText = selection.toString().trim()
         if (selectedText.length < 3) {
           tooltip.classList.remove('show')
           return
         }
-        
+
         tooltipJustShown = true
         self.showAITooltip(selection)
-        
+
         // Reset flag after a short delay
-        setTimeout(function() {
+        setTimeout(function () {
           tooltipJustShown = false
         }, 100)
       })
-      
+
       // Handle AI option selection
-      document.addEventListener('click', function(e) {
+      document.addEventListener('click', function (e) {
         if (e.target.closest('.ai-tooltip-option')) {
           var action = e.target.closest('.ai-tooltip-option').getAttribute('data-action')
           if (selectedText) {
@@ -1354,67 +1377,67 @@ var vm = new Vue({
           }
         }
       })
-      
+
       // Hide tooltip on scroll or click outside
-      document.addEventListener('scroll', function() {
+      document.addEventListener('scroll', function () {
         var tooltip = document.getElementById('ai-tooltip')
         if (tooltip) tooltip.classList.remove('show')
       }, true)
-      
-      document.addEventListener('click', function(e) {
+
+      document.addEventListener('click', function (e) {
         // Don't hide tooltip if it was just shown
         if (tooltipJustShown) return
-        
+
         var tooltip = document.getElementById('ai-tooltip')
         if (tooltip && !tooltip.contains(e.target)) {
           tooltip.classList.remove('show')
         }
       })
     },
-    
-    showAITooltip: function(selection) {
+
+    showAITooltip: function (selection) {
       var tooltip = document.getElementById('ai-tooltip')
       if (!tooltip) return
-      
+
       var rect = selection.getRangeAt(0).getBoundingClientRect()
-      
+
       // Show tooltip to calculate its dimensions
       tooltip.classList.add('show')
-      
+
       // Wait for next frame to get accurate dimensions
-      requestAnimationFrame(function() {
+      requestAnimationFrame(function () {
         var tooltipWidth = tooltip.offsetWidth || 220
         var tooltipHeight = tooltip.offsetHeight + 12 // Include arrow height
-        
+
         // Position tooltip above the selection, centered
         var left = Math.max(10, Math.min(
           window.innerWidth - tooltipWidth - 10,
           rect.left + rect.width / 2 - tooltipWidth / 2
         ))
         var top = rect.top - tooltipHeight - 5
-        
+
         // If tooltip would be above viewport, show it below the selection
         if (top < 10) {
           top = rect.bottom + 10
         }
-        
+
         tooltip.style.left = left + 'px'
         tooltip.style.top = top + 'px'
       })
     },
-    
-    handleAIAction: function(action, text) {
+
+    handleAIAction: function (action, text) {
       // Set the context text
       this.chatContext = text
-      
+
       // Open chat panel if not already open
       if (!this.chatPanelVisible) {
         this.chatPanelVisible = true
       }
-      
+
       var prompt = ''
       var autoSend = false
-      
+
       switch (action) {
         case 'explain':
           prompt = this.aiExplainPrompt || 'Please explain this'
@@ -1429,33 +1452,33 @@ var vm = new Vue({
           autoSend = false
           break
       }
-      
+
       this.chatInput = prompt
-      
+
       if (autoSend && prompt) {
         // Auto-send for explain and summarize
         var self = this
-        this.$nextTick(function() {
-          setTimeout(function() {
+        this.$nextTick(function () {
+          setTimeout(function () {
             self.sendChatMessage()
           }, 50)
         })
       } else {
         // Focus the chat input for question (or when no prompt)
         var self = this
-        this.$nextTick(function() {
-          setTimeout(function() {
+        this.$nextTick(function () {
+          setTimeout(function () {
             var chatInput = document.querySelector('#chat-panel input[type="text"]')
             if (chatInput) chatInput.focus()
           }, 100)
         })
       }
     },
-    sendChatMessageWithAction: function(action) {
+    sendChatMessageWithAction: function (action) {
       if (!this.chatInput.trim() || this.loading.chat || !this.itemSelectedDetails) return
-      
+
       var messageContent = this.chatInput.trim()
-      
+
       // Store the message for display (showing the selected text)
       this.chatMessages.push({
         role: 'user',
@@ -1463,29 +1486,29 @@ var vm = new Vue({
         hasContext: true,
         context: messageContent // The selected text is the context
       })
-      
+
       // For API call, send the selected text as a user message
       var messages = [{
         role: 'user',
         content: messageContent
       }]
-      
+
       this.chatInput = ''
       this.chatContext = '' // Clear context after sending
       this.loading.chat = true
-      
+
       var item = this.itemSelectedDetails
       var content = this.itemSelectedContent
       var vm = this
-      
-      this.$nextTick(function() {
+
+      this.$nextTick(function () {
         var chatContainer = vm.$refs.chatContainer
         if (chatContainer) {
           chatContainer.scrollTop = chatContainer.scrollHeight
         }
       })
-      
-      api.chat(messages, item.title, content, action).then(function(data) {
+
+      api.chat(messages, item.title, content, action).then(function (data) {
         vm.loading.chat = false
         if (data.error) {
           vm.chatMessages.push({
@@ -1498,19 +1521,19 @@ var vm = new Vue({
             content: data.response
           })
         }
-        vm.$nextTick(function() {
+        vm.$nextTick(function () {
           var chatContainer = vm.$refs.chatContainer
           if (chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight
           }
         })
-      }).catch(function(error) {
+      }).catch(function (error) {
         vm.loading.chat = false
         vm.chatMessages.push({
           role: 'assistant',
           content: 'Sorry, I encountered an error: ' + error.message
         })
-        vm.$nextTick(function() {
+        vm.$nextTick(function () {
           var chatContainer = vm.$refs.chatContainer
           if (chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight
@@ -1518,8 +1541,8 @@ var vm = new Vue({
         })
       })
     },
-    
-    clearChatContext: function() {
+
+    clearChatContext: function () {
       this.chatContext = ''
     },
   }

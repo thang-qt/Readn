@@ -916,10 +916,12 @@ a,
     /* Item list toolbar - more compact */
     #col-item-list .toolbar {
         overflow-x: auto;
-        overflow-y: visible; /* Allow dropdowns to show */
+        overflow-y: visible;
+        /* Allow dropdowns to show */
         scrollbar-width: none;
         -ms-overflow-style: none;
-        justify-content: flex-start; /* Ensure proper alignment */
+        justify-content: flex-start;
+        /* Ensure proper alignment */
     }
 
     #col-item-list .toolbar::-webkit-scrollbar {
@@ -970,20 +972,23 @@ a,
     #app #col-feed-list {
         width: 100% !important;
         border-right-width: 0 !important;
-        overflow: visible !important; /* Allow dropdowns to show */
+        overflow: visible !important;
+        /* Allow dropdowns to show */
     }
 
     #app #col-item-list {
         width: 100% !important;
         display: none !important;
         border-right-width: 0 !important;
-        overflow: visible !important; /* Allow dropdowns to show */
+        overflow: visible !important;
+        /* Allow dropdowns to show */
     }
 
     #app #col-item {
         width: 100% !important;
         display: none !important;
-        overflow: visible !important; /* Allow dropdowns to show */
+        overflow: visible !important;
+        /* Allow dropdowns to show */
     }
 
     #app.feed-selected #col-feed-list {
@@ -1127,37 +1132,43 @@ a,
     #col-item-list .toolbar.px-2 {
         display: flex !important;
         align-items: center !important;
-        overflow-x: visible !important; /* Don't allow horizontal scrolling on item list toolbar */
+        overflow-x: visible !important;
+        /* Don't allow horizontal scrolling on item list toolbar */
         width: 100% !important;
-        padding-right: 0 !important; /* Remove right padding completely */
-        padding-left: 0.5rem !important; /* Keep left padding for back button */
+        padding-right: 0 !important;
+        /* Remove right padding completely */
+        padding-left: 0.5rem !important;
+        /* Keep left padding for back button */
         box-sizing: border-box !important;
     }
-    
+
     #col-item-list .toolbar .flex-grow-1 {
         flex-grow: 1 !important;
-        min-width: 0; /* Allow search to shrink if needed */
-        max-width: calc(100% - 120px); /* Reserve space for buttons */
+        min-width: 0;
+        /* Allow search to shrink if needed */
+        max-width: calc(100% - 120px);
+        /* Reserve space for buttons */
     }
-    
-	    /* Keep buttons after search tightly packed */
-	    #col-item-list .toolbar .toolbar-item[title="Mark All Read"] {
-	        flex-shrink: 0 !important;
-	        margin-left: 0.5rem !important;
-	        margin-right: 0 !important;
-	    }
-    
+
+    /* Keep buttons after search tightly packed */
+    #col-item-list .toolbar .toolbar-item[title="Mark All Read"] {
+        flex-shrink: 0 !important;
+        margin-left: 0.5rem !important;
+        margin-right: 0 !important;
+    }
+
     #col-item-list .toolbar .settings-dropdown {
         flex-shrink: 0 !important;
         margin-left: 0.5rem !important;
         margin-right: 0 !important;
     }
-    
+
     /* Force last button to be right-aligned with proper spacing */
-    #col-item-list .toolbar > button:last-child,
+    #col-item-list .toolbar>button:last-child,
     #col-item-list .toolbar button[disabled] {
         margin-left: auto !important;
-        margin-right: 0.5rem !important; /* Match left side spacing */
+        margin-right: 0.5rem !important;
+        /* Match left side spacing */
         padding-left: 0.25rem !important;
         padding-right: 0.25rem !important;
         min-width: 2rem !important;
@@ -1165,13 +1176,13 @@ a,
         justify-content: center !important;
         align-items: center !important;
     }
-    
+
     /* Handle dropdown container separately to avoid breaking functionality */
-    #col-item-list .toolbar > .settings-dropdown {
+    #col-item-list .toolbar>.settings-dropdown {
         margin-left: auto !important;
         margin-right: 0.5rem !important;
     }
-    
+
     /* Only style the dropdown button, not the dropdown itself */
     #col-item-list .toolbar .settings-dropdown .btn {
         padding-left: 0.25rem !important;
@@ -1184,13 +1195,15 @@ a,
     .toolbar {
         flex-wrap: nowrap;
         overflow-x: auto;
-        overflow-y: visible; /* Allow dropdowns to be visible */
+        overflow-y: visible;
+        /* Allow dropdowns to be visible */
         scrollbar-width: none;
         -ms-overflow-style: none;
         gap: 0.25rem;
-        padding-bottom: 0.125rem; /* Small padding to prevent button cut-off */
+        padding-bottom: 0.125rem;
+        /* Small padding to prevent button cut-off */
     }
-    
+
     /* Override for item list toolbar - no horizontal scrolling needed */
     #col-item-list .toolbar {
         overflow-x: visible !important;
@@ -1223,17 +1236,17 @@ a,
         top: 0;
         bottom: 0;
         width: 20px;
-        background: linear-gradient(to left, rgba(255,255,255,0.8), transparent);
+        background: linear-gradient(to left, rgba(255, 255, 255, 0.8), transparent);
         pointer-events: none;
         z-index: 1;
     }
 
     .theme-sepia .toolbar::before {
-        background: linear-gradient(to left, rgba(244,240,229,0.8), transparent);
+        background: linear-gradient(to left, rgba(244, 240, 229, 0.8), transparent);
     }
 
     .theme-night .toolbar::before {
-        background: linear-gradient(to left, rgba(14,14,14,0.8), transparent);
+        background: linear-gradient(to left, rgba(14, 14, 14, 0.8), transparent);
     }
 
     /* Make toolbar search more compact */
@@ -1245,7 +1258,8 @@ a,
     /* Ensure all toolbar items are accessible on mobile */
     .toolbar-item {
         display: flex !important;
-        flex-shrink: 0; /* Prevent items from shrinking */
+        flex-shrink: 0;
+        /* Prevent items from shrinking */
     }
 
     /* Override sidebar toggle hide on mobile */
@@ -1264,7 +1278,7 @@ a,
         position: fixed !important;
         top: auto !important;
     }
-    
+
     /* Ensure all dropdowns work on mobile */
     .dropdown-menu.show {
         position: fixed !important;

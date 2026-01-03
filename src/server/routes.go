@@ -102,44 +102,58 @@ func (s *Server) handleManifest(c *router.Context) {
 	if !strings.HasSuffix(allowedScope, "/") {
 		allowedScope += "/"
 	}
-	startURL := "/"
-	if basePath != "" {
-		if strings.HasPrefix(basePath, "/") {
-			startURL = basePath
-		} else {
-			startURL = "/" + basePath
-		}
-	}
+	startURL := allowedScope
 
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"$schema":          "https://json.schemastore.org/web-manifest-combined.json",
+		"id":               startURL,
 		"name":             "Readn",
 		"short_name":       "Readn",
-		"description":      "ReadN - A minimal, yet featureful feed reader",
+		"description":      "Readn - A minimal, yet featureful feed reader",
 		"display":          "standalone",
+		"orientation":      "any",
+		"dir":              "ltr",
+		"lang":             "en",
 		"start_url":        startURL,
 		"scope":            allowedScope,
 		"theme_color":      "#f8f9fa",
 		"background_color": "#f8f9fa",
+		"categories":       []string{"news", "productivity"},
 		"icons": []map[string]interface{}{
 			{
-				"src":   basePath + "/static/graphicarts/favicon.png",
-				"sizes": "64x64",
-				"type":  "image/png",
+				"src":     basePath + "/static/graphicarts/favicon.png",
+				"sizes":   "64x64",
+				"type":    "image/png",
+				"purpose": "any",
 			},
 			{
-				"src":   basePath + "/static/graphicarts/icon-192.png",
-				"sizes": "192x192",
-				"type":  "image/png",
+				"src":     basePath + "/static/graphicarts/icon-144.png",
+				"sizes":   "144x144",
+				"type":    "image/png",
+				"purpose": "any maskable",
 			},
 			{
-				"src":   basePath + "/static/graphicarts/icon-512.png",
-				"sizes": "512x512",
-				"type":  "image/png",
+				"src":     basePath + "/static/graphicarts/icon-192.png",
+				"sizes":   "192x192",
+				"type":    "image/png",
+				"purpose": "any maskable",
+			},
+			{
+				"src":     basePath + "/static/graphicarts/icon-384.png",
+				"sizes":   "384x384",
+				"type":    "image/png",
+				"purpose": "any maskable",
+			},
+			{
+				"src":     basePath + "/static/graphicarts/icon-512.png",
+				"sizes":   "512x512",
+				"type":    "image/png",
+				"purpose": "any maskable",
 			},
 		},
 	})
 }
+
 
 func (s *Server) handleServiceWorker(c *router.Context) {
 	file, err := assets.FS.Open("service-worker.js")
