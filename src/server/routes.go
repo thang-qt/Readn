@@ -39,7 +39,7 @@ func (s *Server) handler() http.Handler {
 			BasePath: s.BasePath,
 			Username: s.Username,
 			Password: s.Password,
-			Public:   []string{"/static", "/fever"},
+			Public:   []string{"/static", "/fever", "/manifest.json", "/service-worker.js"},
 			DB:       s.db,
 		}
 		r.Use(a.Handler)
@@ -104,6 +104,7 @@ func (s *Server) handleManifest(c *router.Context) {
 	}
 	startURL := allowedScope
 
+	c.Out.Header().Set("Content-Type", "application/manifest+json")
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"$schema":          "https://json.schemastore.org/web-manifest-combined.json",
 		"id":               startURL,
