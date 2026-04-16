@@ -17,6 +17,7 @@ func settingsDefaults() map[string]interface{} {
 		"theme_size":        1,
 		"refresh_rate":      0,
 		"sidebar_collapsed": false,
+		"original_view_proxy_url": "",
 		"ai_api_key":        "",
 		"ai_api_url":        "https://openrouter.ai/api/v1/chat/completions",
 		"ai_model":          "x-ai/grok-4.1-fast",

@@ -236,6 +236,7 @@ var vm = new Vue({
       'itemSelected': null,
       'itemSelectedDetails': null,
       'itemSelectedReadability': '',
+      'itemSelectedOriginal': false,
       'itemSelectedHNDiscussion': '',
       'itemSelectedDiscussion': '',
       'itemSelectedDiscussionProvider': '',
@@ -270,6 +271,7 @@ var vm = new Vue({
         'size': s.theme_size,
       },
       'refreshRate': s.refresh_rate,
+      'originalViewProxyURL': s.original_view_proxy_url || '',
       'aiKey': s.ai_api_key || '',
       'aiURL': s.ai_api_url || 'https://openrouter.ai/api/v1/chat/completions',
       'aiModel': s.ai_model || 'x-ai/grok-4.1-fast',
@@ -351,6 +353,17 @@ var vm = new Vue({
     contentVideos: function () {
       if (!this.itemSelectedDetails) return []
       return (this.itemSelectedDetails.media_links || []).filter(l => l.type === 'video')
+    },
+    originalViewURL: function () {
+      if (!this.itemSelectedDetails || !this.itemSelectedDetails.link) return ''
+
+      var link = this.itemSelectedDetails.link
+      var template = (this.originalViewProxyURL || '').trim()
+      if (!template) return link
+
+      return template
+        .replace(/\$encoded_link/g, encodeURIComponent(link))
+        .replace(/\$link/g, link)
     }
   },
   watch: {
@@ -391,28 +404,6 @@ var vm = new Vue({
       this.itemSelected = null
       if (this.$refs.itemlist) this.$refs.itemlist.scrollTop = 0
     },
-    'itemSelected': function (newVal, oldVal) {
-      this.itemSelectedReadability = ''
-      this.itemSelectedSummary = ''
-      this.summaryError = ''
-      if (newVal === null) {
-        this.itemSelectedDetails = null
-        return
-      }
-      if (this.$refs.content) this.$refs.content.scrollTop = 0
-
-      api.items.get(newVal).then(function (item) {
-        this.itemSelectedDetails = item
-        if (this.itemSelectedDetails.status == 'unread') {
-          api.items.update(this.itemSelectedDetails.id, { status: 'read' }).then(function () {
-            this.feedStats[this.itemSelectedDetails.feed_id].unread -= 1
-            var itemInList = this.items.find(function (i) { return i.id == item.id })
-            if (itemInList) itemInList.status = 'read'
-            this.itemSelectedDetails.status = 'read'
-          }.bind(this))
-        }
-      }.bind(this))
-    },
     'itemSearch': debounce(function (newVal) {
       this.refreshItems()
     }, 500),
@@ -438,6 +429,7 @@ var vm = new Vue({
     },
     'itemSelected': function (newVal, oldVal) {
       this.itemSelectedReadability = ''
+      this.itemSelectedOriginal = false
       this.itemSelectedHNDiscussion = ''
       this.itemSelectedDiscussion = ''
       this.itemSelectedDiscussionProvider = ''
@@ -751,6 +743,7 @@ var vm = new Vue({
         this.itemSelectedReadability = null
         return
       }
+      this.itemSelectedOriginal = false
       // Clear discussions when activating readability
       this.itemSelectedHNDiscussion = ''
       this.itemSelectedDiscussion = ''
@@ -847,6 +840,7 @@ var vm = new Vue({
       var provider = this.getDiscussionProvider(item)
       if (!provider) return
 
+      this.itemSelectedOriginal = false
       // Clear readability when activating discussion
       this.itemSelectedReadability = ''
 
@@ -871,6 +865,21 @@ var vm = new Vue({
         console.error('Discussion load error:', error)
         vm.loading.discussion = false
       })
+    },
+    toggleOriginalView: function () {
+      if (this.itemSelectedOriginal) {
+        this.itemSelectedOriginal = false
+        return
+      }
+
+      var item = this.itemSelectedDetails
+      if (!item || !item.link) return
+
+      this.itemSelectedOriginal = true
+      this.itemSelectedReadability = ''
+      this.itemSelectedHNDiscussion = ''
+      this.itemSelectedDiscussion = ''
+      this.itemSelectedDiscussionProvider = ''
     },
     toggleHNDiscussion: function () {
       if (this.itemSelectedHNDiscussion) {
@@ -1062,6 +1071,10 @@ var vm = new Vue({
     updateAIKey: function (value) {
       this.aiKey = value
       api.settings.update({ ai_api_key: value })
+    },
+    updateOriginalViewProxyURL: function (value) {
+      this.originalViewProxyURL = value
+      api.settings.update({ original_view_proxy_url: value })
     },
     updateAIURL: function (value) {
       this.aiURL = value

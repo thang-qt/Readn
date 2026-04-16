@@ -361,6 +361,11 @@
                         <span class="icon" :class="{'icon-loading': loading.readability}">{% inline "book-open.svg"
                             %}</span>
                     </button>
+                    <button class="toolbar-item" v-if="itemSelectedDetails && itemSelectedDetails.link"
+                        :class="{active: itemSelectedOriginal}" @click="toggleOriginalView()"
+                        title="Original View">
+                        <span class="icon">{% inline "globe.svg" %}</span>
+                    </button>
                     <button class="toolbar-item discussion-button" v-if="hasDiscussion(itemSelectedDetails)"
                         :class="{active: itemSelectedDiscussion}" @click="toggleDiscussion()"
                         title="Read Discussion Here">
@@ -397,9 +402,17 @@
                 <!-- Article Content -->
                 <div v-if="itemSelectedDetails" ref="content"
                     class="content px-4 pt-3 pb-5 border-top overflow-auto scroll-touch flex-grow-1"
-                    :class="{'font-serif': theme.font == 'serif', 'font-monospace': theme.font == 'monospace'}"
+                    :class="{'font-serif': theme.font == 'serif', 'font-monospace': theme.font == 'monospace', 'original-view-mode': itemSelectedOriginal}"
                     :style="{'font-size': theme.size + 'rem'}">
-                    <div class="content-wrapper">
+                    <div class="content-wrapper" :class="{'original-view-wrapper': itemSelectedOriginal}">
+                        <template v-if="itemSelectedOriginal">
+                            <div class="original-view">
+                                <iframe class="original-view-frame" :src="originalViewURL"
+                                    :title="itemSelectedDetails.title || 'Original article'" loading="lazy"
+                                    referrerpolicy="no-referrer"></iframe>
+                            </div>
+                        </template>
+                        <template v-else>
                         <h1><b>{{ itemSelectedDetails.title || 'untitled' }}</b></h1>
                         <div class="text-muted">
                             <div>
@@ -449,6 +462,7 @@
                             <video class="w-100" controls v-for="media in contentVideos" :src="media.url"></video>
                         </div>
                         <div v-html="itemSelectedContent"></div>
+                        </template>
                     </div>
                 </div>
                 <!-- AI Chat tooltip -->
@@ -692,6 +706,15 @@
                             <small class="form-text text-muted d-block">Right-click text actions for explain and
                                 summarize</small>
                         </div>
+                    </div>
+                    <div class="form-group">
+                        <label for="original-view-proxy-url">Original View Proxy URL</label>
+                        <input type="text" id="original-view-proxy-url" class="form-control"
+                            placeholder="https://mirror.example.com/?url=$encoded_link" :value="originalViewProxyURL"
+                            @input="updateOriginalViewProxyURL($event.target.value)"
+                            title="Optional proxy template for iframe original view">
+                        <small class="form-text text-muted">Optional. Use <code>$link</code> for the raw article URL
+                            or <code>$encoded_link</code> for the URL-encoded article URL.</small>
                     </div>
                     <div class="form-group">
                         <label for="ai-api-key">AI API Key</label>

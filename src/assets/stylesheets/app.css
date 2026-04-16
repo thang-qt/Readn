@@ -578,6 +578,18 @@ select.form-control:not([multiple]):not([size]) {
     margin: 0 auto;
 }
 
+.content.original-view-mode {
+    padding: 0 !important;
+    display: flex;
+}
+
+.content-wrapper.original-view-wrapper {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    display: flex;
+}
+
 .content img,
 .content video {
     max-width: 100%;
@@ -610,6 +622,22 @@ select.form-control:not([multiple]):not([size]) {
     left: 0;
     width: 100%;
     height: 100%;
+}
+
+.original-view {
+    width: 100%;
+    flex: 1 1 auto;
+    display: flex;
+}
+
+.original-view-frame {
+    display: block;
+    width: 100%;
+    min-height: 100%;
+    flex: 1 1 auto;
+    border: 0;
+    border-radius: 0;
+    background: #fff;
 }
 
 .content pre {
