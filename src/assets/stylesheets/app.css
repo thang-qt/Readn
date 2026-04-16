@@ -1693,7 +1693,7 @@ a,
 }
 
 .discussion-comments h3 {
-    font-size: 1.17rem;
+    font-size: 1.17em;
     font-weight: 600;
     color: inherit;
     margin-bottom: 1.5rem;
@@ -1749,7 +1749,7 @@ a,
     padding: 0;
     margin: 0;
     transition: color 0.15s ease;
-    font-size: 0.8rem;
+    font-size: 0.8em;
 }
 
 .discussion-comment-toggle .icon {
@@ -1759,8 +1759,8 @@ a,
 }
 
 .discussion-comment-toggle .icon svg {
-    width: 0.75rem;
-    height: 0.75rem;
+    width: 0.75em;
+    height: 0.75em;
 }
 
 .discussion-comment-toggle:hover {
@@ -1788,23 +1788,23 @@ a,
 /* Comment metadata */
 .discussion-comment-author {
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.85em;
 }
 
 .discussion-comment-time {
     opacity: 0.8;
     color: rgba(0, 0, 0, 0.6);
-    font-size: 0.8rem;
+    font-size: 0.8em;
 }
 
 .discussion-comment-separator {
     color: rgba(0, 0, 0, 0.4);
-    font-size: 0.8rem;
+    font-size: 0.8em;
     user-select: none;
 }
 
 .discussion-comment-content {
-    font-size: 0.9rem;
+    font-size: 0.9em;
     line-height: 1.5;
     color: inherit;
 }
