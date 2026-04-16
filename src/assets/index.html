@@ -252,6 +252,25 @@
                         Change Link
                     </button>
                     <div class="dropdown-divider"></div>
+                    <header class="dropdown-header" role="heading" aria-level="2">Default View</header>
+                    <button class="dropdown-item d-flex align-items-center justify-content-between"
+                        :aria-pressed="!current.feed.default_view" @click.stop="updateFeedDefaultView(current.feed, '')">
+                        <span>Feed</span>
+                        <span class="icon ml-2" v-if="!current.feed.default_view">{% inline "check.svg" %}</span>
+                    </button>
+                    <button class="dropdown-item d-flex align-items-center justify-content-between"
+                        :aria-pressed="current.feed.default_view == 'readability'"
+                        @click.stop="updateFeedDefaultView(current.feed, 'readability')">
+                        <span>Text</span>
+                        <span class="icon ml-2" v-if="current.feed.default_view == 'readability'">{% inline "check.svg" %}</span>
+                    </button>
+                    <button class="dropdown-item d-flex align-items-center justify-content-between"
+                        :aria-pressed="current.feed.default_view == 'original'"
+                        @click.stop="updateFeedDefaultView(current.feed, 'original')">
+                        <span>Original</span>
+                        <span class="icon ml-2" v-if="current.feed.default_view == 'original'">{% inline "check.svg" %}</span>
+                    </button>
+                    <div class="dropdown-divider"></div>
                     <header class="dropdown-header" role="heading" aria-level="2">Move to...</header>
                     <button class="dropdown-item" v-if="folder.id != current.feed.folder_id" v-for="folder in folders"
                         @click="moveFeed(current.feed, folder)">
@@ -362,8 +381,7 @@
                             %}</span>
                     </button>
                     <button class="toolbar-item" v-if="itemSelectedDetails && itemSelectedDetails.link"
-                        :class="{active: itemSelectedOriginal}" @click="toggleOriginalView()"
-                        title="Original View">
+                        :class="{active: itemSelectedOriginal}" @click="toggleOriginalView()" title="Original View">
                         <span class="icon">{% inline "globe.svg" %}</span>
                     </button>
                     <button class="toolbar-item discussion-button" v-if="hasDiscussion(itemSelectedDetails)"
@@ -413,55 +431,55 @@
                             </div>
                         </template>
                         <template v-else>
-                        <h1><b>{{ itemSelectedDetails.title || 'untitled' }}</b></h1>
-                        <div class="text-muted">
-                            <div>
-                                <span class="cursor-pointer"
-                                    @click="feedSelected = 'feed:'+(feedsById[itemSelectedDetails.feed_id] || {}).id">
-                                    {{ (feedsById[itemSelectedDetails.feed_id] || {}).title }}
-                                </span>
+                            <h1><b>{{ itemSelectedDetails.title || 'untitled' }}</b></h1>
+                            <div class="text-muted">
+                                <div>
+                                    <span class="cursor-pointer"
+                                        @click="feedSelected = 'feed:'+(feedsById[itemSelectedDetails.feed_id] || {}).id">
+                                        {{ (feedsById[itemSelectedDetails.feed_id] || {}).title }}
+                                    </span>
+                                </div>
+                                <div
+                                    v-if="getDiscussionProvider(itemSelectedDetails) && !providerMentionedInFeedTitle(itemSelectedDetails, getDiscussionProvider(itemSelectedDetails))">
+                                    <a v-if="getDiscussionLink(itemSelectedDetails).discussionUrl"
+                                        :href="getDiscussionLink(itemSelectedDetails).discussionUrl" target="_blank"
+                                        rel="noopener noreferrer" class="text-decoration-none">
+                                        {{ providerLabel(getDiscussionProvider(itemSelectedDetails)) }}
+                                    </a>
+                                    <span v-else>
+                                        {{ providerLabel(getDiscussionProvider(itemSelectedDetails)) }}
+                                    </span>
+                                </div>
+                                <div v-if="getDiscussionLink(itemSelectedDetails).targetUrl" class="text-truncate">
+                                    <a :href="getDiscussionLink(itemSelectedDetails).targetUrl" target="_blank"
+                                        rel="noopener noreferrer" class="text-decoration-none">
+                                        {{ getDiscussionLink(itemSelectedDetails).targetUrl }}
+                                    </a>
+                                </div>
+                                <time>{{ formatDate(itemSelectedDetails.date) }}</time>
                             </div>
-                            <div
-                                v-if="getDiscussionProvider(itemSelectedDetails) && !providerMentionedInFeedTitle(itemSelectedDetails, getDiscussionProvider(itemSelectedDetails))">
-                                <a v-if="getDiscussionLink(itemSelectedDetails).discussionUrl"
-                                    :href="getDiscussionLink(itemSelectedDetails).discussionUrl" target="_blank"
-                                    rel="noopener noreferrer" class="text-decoration-none">
-                                    {{ providerLabel(getDiscussionProvider(itemSelectedDetails)) }}
-                                </a>
-                                <span v-else>
-                                    {{ providerLabel(getDiscussionProvider(itemSelectedDetails)) }}
-                                </span>
+                            <div v-if="itemSelectedSummary && !summaryError"
+                                class="summary-card mt-3 mb-3 p-3 border rounded bg-light">
+                                <h5 class="mb-2"><strong>TL;DR</strong></h5>
+                                <p class="mb-0">{{ itemSelectedSummary }}</p>
                             </div>
-                            <div v-if="getDiscussionLink(itemSelectedDetails).targetUrl" class="text-truncate">
-                                <a :href="getDiscussionLink(itemSelectedDetails).targetUrl" target="_blank"
-                                    rel="noopener noreferrer" class="text-decoration-none">
-                                    {{ getDiscussionLink(itemSelectedDetails).targetUrl }}
-                                </a>
+                            <div v-if="summaryError"
+                                class="summary-error mt-3 mb-3 p-3 border rounded bg-danger text-white">
+                                <h5 class="mb-2"><strong>TL;DR Error</strong></h5>
+                                <p class="mb-0">{{ summaryError }}</p>
                             </div>
-                            <time>{{ formatDate(itemSelectedDetails.date) }}</time>
-                        </div>
-                        <div v-if="itemSelectedSummary && !summaryError"
-                            class="summary-card mt-3 mb-3 p-3 border rounded bg-light">
-                            <h5 class="mb-2"><strong>TL;DR</strong></h5>
-                            <p class="mb-0">{{ itemSelectedSummary }}</p>
-                        </div>
-                        <div v-if="summaryError"
-                            class="summary-error mt-3 mb-3 p-3 border rounded bg-danger text-white">
-                            <h5 class="mb-2"><strong>TL;DR Error</strong></h5>
-                            <p class="mb-0">{{ summaryError }}</p>
-                        </div>
-                        <hr>
-                        <div v-if="!itemSelectedReadability">
-                            <div v-if="contentImages.length">
-                                <figure v-for="media in contentImages">
-                                    <img :src="media.url" loading="lazy">
-                                    <figcaption v-if="media.description">{{ media.description }}</figcaption>
-                                </figure>
+                            <hr>
+                            <div v-if="!itemSelectedReadability">
+                                <div v-if="contentImages.length">
+                                    <figure v-for="media in contentImages">
+                                        <img :src="media.url" loading="lazy">
+                                        <figcaption v-if="media.description">{{ media.description }}</figcaption>
+                                    </figure>
+                                </div>
+                                <audio class="w-100" controls v-for="media in contentAudios" :src="media.url"></audio>
+                                <video class="w-100" controls v-for="media in contentVideos" :src="media.url"></video>
                             </div>
-                            <audio class="w-100" controls v-for="media in contentAudios" :src="media.url"></audio>
-                            <video class="w-100" controls v-for="media in contentVideos" :src="media.url"></video>
-                        </div>
-                        <div v-html="itemSelectedContent"></div>
+                            <div v-html="itemSelectedContent"></div>
                         </template>
                     </div>
                 </div>
@@ -572,8 +590,9 @@
             </div>
         </div>
         <modal :open="!!settings" :modal-class="settings === 'settings' ? 'settings-modal' : ''" @hide="settings = ''">
-            <button class="btn btn-link outline-none float-right p-2 mr-n2 mt-n2" style="line-height: 1"
-                @click="settings = ''">
+            <!-- Non-settings modals use simple close button -->
+            <button v-if="settings !== 'settings'" class="btn btn-link outline-none float-right p-2 mr-n2 mt-n2"
+                style="line-height: 1" @click="settings = ''">
                 <span class="icon">{% inline "x.svg" %}</span>
             </button>
             <div v-if="settings=='create'">
@@ -611,163 +630,287 @@
                         type="submit">Add</button>
                 </form>
             </div>
-            <div v-else-if="settings=='shortcuts'">
-                <p class="cursor-default"><b>Keyboard Shortcuts</b></p>
+            <div v-else-if="settings=='settings'" class="settings-shell">
+                <div class="settings-header">
+                    <div>
+                        <p class="cursor-default mb-1"><b>Settings</b></p>
+                        <div class="light small">Reader, sync, and AI preferences.</div>
+                    </div>
+                    <button class="btn btn-link outline-none p-2 mr-n2 mt-n2" style="line-height: 1"
+                        @click="settings = ''">
+                        <span class="icon">{% inline "x.svg" %}</span>
+                    </button>
+                </div>
+                <div class="settings-tabs">
+                    <button class="settings-tab-btn" :class="{active: settingsTab === 'general'}"
+                        @click="settingsTab = 'general'">
+                        General
+                    </button>
+                    <button class="settings-tab-btn" :class="{active: settingsTab === 'reading'}"
+                        @click="settingsTab = 'reading'">
+                        Reading
+                    </button>
+                    <button class="settings-tab-btn" :class="{active: settingsTab === 'ai-features'}"
+                        @click="settingsTab = 'ai-features'">
+                        AI Features
+                    </button>
+                    <button class="settings-tab-btn" :class="{active: settingsTab === 'ai-config'}"
+                        @click="settingsTab = 'ai-config'">
+                        AI Config
+                    </button>
+                    <button class="settings-tab-btn" :class="{active: settingsTab === 'shortcuts'}"
+                        @click="settingsTab = 'shortcuts'">
+                        Shortcuts
+                    </button>
+                </div>
+                <div class="settings-body">
+                    <div v-if="settingsTab === 'general'" class="settings-grid">
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Theme</div>
+                            <div class="view-mode-group mt-2">
+                                <button v-for="t in ['light', 'sepia', 'night']" :key="t" class="view-mode-btn"
+                                    :class="{active: theme.name == t}" :aria-label="t" :aria-pressed="theme.name == t"
+                                    @click="theme.name = t">
+                                    {{ t }}
+                                </button>
+                            </div>
+                        </section>
 
-                <table class="table table-borderless table-sm table-compact m-0">
-                    <tr>
-                        <td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td>
-                        <td>show unread / starred / all feeds</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>t</kbd></td>
-                        <td>toggle sidebar</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>/</kbd></td>
-                        <td>focus the search bar</td>
-                    </tr>
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Auto Refresh</div>
+                            <div class="settings-choice-row mt-2">
+                                <button
+                                    v-for="[val, label] in [[0,'Off'],[10,'10m'],[30,'30m'],[60,'1h'],[120,'2h'],[240,'4h']]"
+                                    :key="val" class="settings-choice" :class="{active: refreshRate == val}"
+                                    :aria-pressed="refreshRate == val" @click="refreshRate = val">
+                                    {{ label }}
+                                </button>
+                            </div>
+                        </section>
 
-                    <tr>
-                        <td colspan=2>&nbsp;</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>j</kbd> <kbd>k</kbd></td>
-                        <td>next / prev article</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>l</kbd> <kbd>h</kbd></td>
-                        <td>next / prev feed</td>
-                    </tr>
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Sort Order</div>
+                            <div class="view-mode-group mt-2">
+                                <button class="view-mode-btn" :class="{active: itemSortNewestFirst}"
+                                    :aria-pressed="itemSortNewestFirst" @click="itemSortNewestFirst = true">
+                                    Newest first
+                                </button>
+                                <button class="view-mode-btn" :class="{active: !itemSortNewestFirst}"
+                                    :aria-pressed="!itemSortNewestFirst" @click="itemSortNewestFirst = false">
+                                    Oldest first
+                                </button>
+                            </div>
+                        </section>
 
-                    <tr>
-                        <td colspan=2>&nbsp;</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>R</kbd></td>
-                        <td>mark all read</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>r</kbd></td>
-                        <td>mark read / unread</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>s</kbd></td>
-                        <td>mark starred / unstarred</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>o</kbd></td>
-                        <td>open link</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>i</kbd></td>
-                        <td>read here</td>
-                    </tr>
-                    <tr>
-                        <td><kbd>f</kbd> <kbd>b</kbd></td>
-                        <td>scroll content forward / backward</td>
-                    </tr>
-                </table>
-            </div>
-            <div v-else-if="settings=='settings'">
-                <p class="cursor-default"><b>Settings</b></p>
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Subscriptions</div>
+                            <div class="settings-action-row mt-2">
+                                <form id="opml-import-form-settings" enctype="multipart/form-data" tabindex="-1"
+                                    class="settings-action-grow">
+                                    <input type="file" id="opml-import-settings" @change="importOPMLSettings"
+                                        name="opml"
+                                        style="opacity: 0; width: 1px; height: 0; position: absolute; z-index: -1;">
+                                    <label class="btn btn-default d-block text-center mb-0 cursor-pointer"
+                                        for="opml-import-settings">
+                                        <span class="icon mr-1">{% inline "download.svg" %}</span>
+                                        Import OPML
+                                    </label>
+                                </form>
+                                <a class="btn btn-default settings-action-grow text-center" href="./opml/export">
+                                    <span class="icon mr-1">{% inline "upload.svg" %}</span>
+                                    Export OPML
+                                </a>
+                            </div>
+                        </section>
 
-                <div class="mt-4">
-                    <h5>AI Settings</h5>
-                    <div class="form-group">
-                        <label class="form-check-label d-block mb-2">
-                            <strong>AI Feature Controls</strong>
-                        </label>
-                        <div class="form-check">
-                            <input type="checkbox" id="ai-enable-article-summary" class="form-check-input"
-                                :checked="aiEnableArticleSummary"
-                                @change="updateAIEnableArticleSummary($event.target.checked)">
-                            <label class="form-check-label" for="ai-enable-article-summary">
-                                Enable Article Summarization
+                        <section class="settings-section-box" v-if="authenticated">
+                            <div class="settings-section-title">Account</div>
+                            <div class="mt-2">
+                                <button class="btn btn-default text-danger" @click="logout()">
+                                    <span class="icon mr-1">{% inline "log-out.svg" %}</span>
+                                    Log out
+                                </button>
+                            </div>
+                        </section>
+                    </div>
+
+                    <div v-if="settingsTab === 'reading'" class="settings-grid">
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Font Family</div>
+                            <div class="view-mode-group mt-2">
+                                <button class="view-mode-btn" :class="{active: !theme.font}" @click="theme.font = ''">
+                                    Sans-serif
+                                </button>
+                                <button class="view-mode-btn font-serif" :class="{active: theme.font == 'serif'}"
+                                    @click="theme.font = 'serif'">
+                                    Serif
+                                </button>
+                                <button class="view-mode-btn font-monospace"
+                                    :class="{active: theme.font == 'monospace'}" @click="theme.font = 'monospace'">
+                                    Mono
+                                </button>
+                            </div>
+                        </section>
+
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Font Size</div>
+                            <div class="settings-stepper mt-2">
+                                <button class="btn btn-default" @click="incrFont(-1)">A-</button>
+                                <span class="settings-stepper-value">{{ theme.size }}x</span>
+                                <button class="btn btn-default" @click="incrFont(1)">A+</button>
+                            </div>
+                        </section>
+
+                        <section class="settings-section-box settings-section-box-wide">
+                            <label for="original-view-proxy-url" class="settings-section-title">Original View Proxy</label>
+                            <input type="text" id="original-view-proxy-url" class="form-control mt-2"
+                                placeholder="https://mirror.example.com/?url=$encoded_link"
+                                :value="originalViewProxyURL" @input="updateOriginalViewProxyURL($event.target.value)"
+                                title="Optional proxy template for iframe original view">
+                            <small class="form-text text-muted">Use <code>$link</code> or <code>$encoded_link</code> for the article URL.</small>
+                        </section>
+                    </div>
+
+                    <div v-if="settingsTab === 'ai-features'" class="settings-stack">
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Feature Controls</div>
+                            <label class="settings-check mt-2">
+                                <input type="checkbox" id="ai-enable-article-summary"
+                                    :checked="aiEnableArticleSummary"
+                                    @change="updateAIEnableArticleSummary($event.target.checked)">
+                                <span>
+                                    <strong>Article Summarization</strong>
+                                    <small class="d-block light">Generate AI summaries for articles.</small>
+                                </span>
                             </label>
-                            <small class="form-text text-muted d-block">Generate AI summaries for individual
-                                articles</small>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" id="ai-enable-chat" class="form-check-input" :checked="aiEnableChat"
-                                @change="updateAIEnableChat($event.target.checked)">
-                            <label class="form-check-label" for="ai-enable-chat">
-                                Enable AI Chat
+                            <label class="settings-check">
+                                <input type="checkbox" id="ai-enable-chat" :checked="aiEnableChat"
+                                    @change="updateAIEnableChat($event.target.checked)">
+                                <span>
+                                    <strong>AI Chat</strong>
+                                    <small class="d-block light">Interactive chat with article context.</small>
+                                </span>
                             </label>
-                            <small class="form-text text-muted d-block">Interactive chat with article context</small>
-                        </div>
-                        <div class="form-check">
-                            <input type="checkbox" id="ai-enable-text-actions" class="form-check-input"
-                                :checked="aiEnableTextActions"
-                                @change="updateAIEnableTextActions($event.target.checked)">
-                            <label class="form-check-label" for="ai-enable-text-actions">
-                                Enable Text Actions (Explain/Summarize tooltips)
+                            <label class="settings-check">
+                                <input type="checkbox" id="ai-enable-text-actions" :checked="aiEnableTextActions"
+                                    @change="updateAIEnableTextActions($event.target.checked)">
+                                <span>
+                                    <strong>Text Actions</strong>
+                                    <small class="d-block light">Explain and summarize selected text.</small>
+                                </span>
                             </label>
-                            <small class="form-text text-muted d-block">Right-click text actions for explain and
-                                summarize</small>
-                        </div>
+                        </section>
+
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Prompts</div>
+                            <div class="form-group mt-2">
+                                <label for="ai-prompt">Summary Prompt</label>
+                                <textarea id="ai-prompt" class="form-control" rows="3"
+                                    placeholder="Customize the prompt for article summarization" :value="aiPrompt"
+                                    @input="updateAIPrompt($event.target.value)"></textarea>
+                                <small class="form-text text-muted">Sent to AI before the article content.</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="ai-explain-prompt">Explain Prompt</label>
+                                <textarea id="ai-explain-prompt" class="form-control" rows="2"
+                                    placeholder="Custom prompt for 'Explain this'" :value="aiExplainPrompt"
+                                    @input="updateAIExplainPrompt($event.target.value)"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label for="ai-summarize-prompt">Summarize Text Prompt</label>
+                                <textarea id="ai-summarize-prompt" class="form-control" rows="2"
+                                    placeholder="Custom prompt for 'Summarize'" :value="aiSummarizePrompt"
+                                    @input="updateAISummarizePrompt($event.target.value)"></textarea>
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="ai-personality">Chat Personality</label>
+                                <textarea id="ai-personality" class="form-control" rows="3"
+                                    placeholder="Define the AI's behavior in chat" :value="aiPersonality"
+                                    @input="updateAIPersonality($event.target.value)"></textarea>
+                                <small class="form-text text-muted">Applied to all AI chat conversations.</small>
+                            </div>
+                        </section>
                     </div>
-                    <div class="form-group">
-                        <label for="original-view-proxy-url">Original View Proxy URL</label>
-                        <input type="text" id="original-view-proxy-url" class="form-control"
-                            placeholder="https://mirror.example.com/?url=$encoded_link" :value="originalViewProxyURL"
-                            @input="updateOriginalViewProxyURL($event.target.value)"
-                            title="Optional proxy template for iframe original view">
-                        <small class="form-text text-muted">Optional. Use <code>$link</code> for the raw article URL
-                            or <code>$encoded_link</code> for the URL-encoded article URL.</small>
+
+                    <div v-if="settingsTab === 'ai-config'" class="settings-stack">
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">API Connection</div>
+                            <div class="form-group mt-2">
+                                <label for="ai-api-key">API Key</label>
+                                <input type="password" id="ai-api-key" class="form-control"
+                                    placeholder="Enter your API key" :value="aiKey"
+                                    @input="updateAIKey($event.target.value)">
+                            </div>
+                            <div class="form-group">
+                                <label for="ai-api-url">API URL</label>
+                                <input type="url" id="ai-api-url" class="form-control"
+                                    placeholder="https://openrouter.ai/api/v1/chat/completions" :value="aiURL"
+                                    @input="updateAIURL($event.target.value)">
+                            </div>
+                            <div class="form-group mb-0">
+                                <label for="ai-model">Model</label>
+                                <input type="text" id="ai-model" class="form-control" placeholder="x-ai/grok-4.1-fast"
+                                    :value="aiModel" @input="updateAIModel($event.target.value)">
+                            </div>
+                        </section>
                     </div>
-                    <div class="form-group">
-                        <label for="ai-api-key">AI API Key</label>
-                        <input type="password" id="ai-api-key" class="form-control" placeholder="Enter your API key"
-                            :value="aiKey" @input="updateAIKey($event.target.value)"
-                            title="Enter your API key to enable AI features">
-                    </div>
-                    <div class="form-group">
-                        <label for="ai-api-url">AI API URL</label>
-                        <input type="url" id="ai-api-url" class="form-control"
-                            placeholder="https://openrouter.ai/api/v1/chat/completions" :value="aiURL"
-                            @input="updateAIURL($event.target.value)"
-                            title="AI API endpoint URL (default: openrouter.ai)">
-                    </div>
-                    <div class="form-group">
-                        <label for="ai-model">AI Model</label>
-                        <input type="text" id="ai-model" class="form-control" placeholder="x-ai/grok-4.1-fast"
-                            :value="aiModel" @input="updateAIModel($event.target.value)"
-                            title="AI model to use for summaries">
-                    </div>
-                    <div class="form-group">
-                        <label for="ai-prompt">AI Summary Prompt</label>
-                        <textarea id="ai-prompt" class="form-control" rows="3"
-                            placeholder="Customize the prompt sent to AI for summarization" :value="aiPrompt"
-                            @input="updateAIPrompt($event.target.value)"
-                            title="Custom prompt template for AI summarization"></textarea>
-                        <small class="form-text text-muted">This prompt will be sent to the AI before the article
-                            content for summarization.</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="ai-personality">AI Personality</label>
-                        <textarea id="ai-personality" class="form-control" rows="3"
-                            placeholder="Define how the AI should behave in chat conversations (e.g., professional, friendly, concise, detailed...)"
-                            :value="aiPersonality" @input="updateAIPersonality($event.target.value)"
-                            title="Custom personality for AI chat interactions"></textarea>
-                        <small class="form-text text-muted">This personality will be applied to all AI chat
-                            conversations.</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="ai-explain-prompt">AI Explain Prompt</label>
-                        <textarea id="ai-explain-prompt" class="form-control" rows="2"
-                            placeholder="Custom prompt for 'Explain this' tooltip action" :value="aiExplainPrompt"
-                            @input="updateAIExplainPrompt($event.target.value)"
-                            title="Custom prompt for explain tooltip action"></textarea>
-                        <small class="form-text text-muted">Used when clicking 'Explain this' on selected text.</small>
-                    </div>
-                    <div class="form-group">
-                        <label for="ai-summarize-prompt">AI Summarize Text Prompt</label>
-                        <textarea id="ai-summarize-prompt" class="form-control" rows="2"
-                            placeholder="Custom prompt for 'Summarize' tooltip action" :value="aiSummarizePrompt"
-                            @input="updateAISummarizePrompt($event.target.value)"
-                            title="Custom prompt for summarize tooltip action"></textarea>
-                        <small class="form-text text-muted">Used when clicking 'Summarize' on selected text.</small>
+
+                    <div v-if="settingsTab === 'shortcuts'" class="settings-stack">
+                        <section class="settings-section-box">
+                            <div class="settings-section-title">Keyboard Shortcuts</div>
+                            <table class="table table-borderless table-sm table-compact m-0 mt-2">
+                                <tr>
+                                    <td><kbd>1</kbd> <kbd>2</kbd> <kbd>3</kbd></td>
+                                    <td>show unread / starred / all feeds</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>t</kbd></td>
+                                    <td>toggle sidebar</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>/</kbd></td>
+                                    <td>focus the search bar</td>
+                                </tr>
+                                <tr>
+                                    <td colspan=2>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>j</kbd> <kbd>k</kbd></td>
+                                    <td>next / prev article</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>l</kbd> <kbd>h</kbd></td>
+                                    <td>next / prev feed</td>
+                                </tr>
+                                <tr>
+                                    <td colspan=2>&nbsp;</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>R</kbd></td>
+                                    <td>mark all read</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>r</kbd></td>
+                                    <td>mark read / unread</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>s</kbd></td>
+                                    <td>mark starred / unstarred</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>o</kbd></td>
+                                    <td>open link</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>i</kbd></td>
+                                    <td>read here</td>
+                                </tr>
+                                <tr>
+                                    <td><kbd>f</kbd> <kbd>b</kbd></td>
+                                    <td>scroll content forward / backward</td>
+                                </tr>
+                            </table>
+                        </section>
                     </div>
                 </div>
             </div>

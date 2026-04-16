@@ -236,6 +236,7 @@ var vm = new Vue({
       'itemSelected': null,
       'itemSelectedDetails': null,
       'itemSelectedReadability': '',
+      'itemSelectedReadabilityRequest': 0,
       'itemSelectedOriginal': false,
       'itemSelectedHNDiscussion': '',
       'itemSelectedDiscussion': '',
@@ -290,6 +291,7 @@ var vm = new Vue({
       'chatInput': '',
       'chatContext': '',
       'isOffline': false,
+      'settingsTab': 'general',
     }
   },
   computed: {
@@ -429,12 +431,14 @@ var vm = new Vue({
     },
     'itemSelected': function (newVal, oldVal) {
       this.itemSelectedReadability = ''
+      this.itemSelectedReadabilityRequest += 1
       this.itemSelectedOriginal = false
       this.itemSelectedHNDiscussion = ''
       this.itemSelectedDiscussion = ''
       this.itemSelectedDiscussionProvider = ''
       this.itemSelectedSummary = ''
       this.summaryError = ''
+      this.loading.readability = false
       // Clear chat when switching articles
       if (oldVal !== undefined && newVal !== oldVal) {
         this.chatMessages = []
@@ -447,6 +451,8 @@ var vm = new Vue({
 
       api.items.get(newVal).then(function (item) {
         vm.itemSelectedDetails = item
+        vm.applyFeedDefaultView(item)
+
         if (vm.itemSelectedDetails.status == 'unread') {
           api.items.update(vm.itemSelectedDetails.id, { status: 'read' }).then(function () {
             vm.feedStats[vm.itemSelectedDetails.feed_id].unread -= 1
@@ -752,9 +758,16 @@ var vm = new Vue({
       var item = this.itemSelectedDetails
       if (!item) return
       if (item.link) {
+        var requestId = this.itemSelectedReadabilityRequest + 1
+        this.itemSelectedReadabilityRequest = requestId
         this.loading.readability = true
         api.crawl(item.link).then(function (data) {
+          if (vm.itemSelectedReadabilityRequest !== requestId) return
+          if (!vm.itemSelectedDetails || vm.itemSelectedDetails.id !== item.id) return
           vm.itemSelectedReadability = data && data.content
+          vm.loading.readability = false
+        }).catch(function () {
+          if (vm.itemSelectedReadabilityRequest !== requestId) return
           vm.loading.readability = false
         })
       }
@@ -1219,11 +1232,20 @@ var vm = new Vue({
       return message.replace(/\\n/g, '<br>').replace(/\n/g, '<br>')
     },
     showSettings: function (settings) {
+      // 'shortcuts' shortcut now opens settings modal at the shortcuts tab
+      if (settings === 'shortcuts') {
+        this.settings = 'settings'
+        this.settingsTab = 'shortcuts'
+        return
+      }
       this.settings = settings
 
       if (settings === 'create') {
         vm.feedNewChoice = []
         vm.feedNewChoiceSelected = ''
+      }
+      if (settings === 'settings') {
+        this.settingsTab = 'general'
       }
     },
     resizeFeedList: function (width) {
@@ -1242,6 +1264,42 @@ var vm = new Vue({
     fetchAllFeeds: function () {
       if (this.loading.feeds) return
       api.feeds.refresh().then(function () {
+        vm.refreshStats()
+      })
+    },
+    normalizeFeedDefaultView: function (view) {
+      if (view === 'readability' || view === 'original') return view
+      return ''
+    },
+    applyFeedDefaultView: function (item) {
+      if (!item) return
+
+      var feed = this.feedsById[item.feed_id]
+      var defaultView = this.normalizeFeedDefaultView(feed && feed.default_view)
+
+      if (defaultView === 'readability' && item.link) {
+        this.$nextTick(function () {
+          vm.toggleReadability()
+        })
+      } else if (defaultView === 'original' && item.link) {
+        this.$nextTick(function () {
+          vm.toggleOriginalView()
+        })
+      }
+    },
+    updateFeedDefaultView: function (feed, view) {
+      var normalizedView = this.normalizeFeedDefaultView(view)
+      if (!feed || feed.default_view === normalizedView) return
+      api.feeds.update(feed.id, { default_view: normalizedView }).then(function () {
+        feed.default_view = normalizedView
+      })
+    },
+    importOPMLSettings: function (event) {
+      var input = event.target
+      var form = document.querySelector('#opml-import-form-settings')
+      api.upload_opml(form).then(function () {
+        input.value = ''
+        vm.refreshFeeds()
         vm.refreshStats()
       })
     },

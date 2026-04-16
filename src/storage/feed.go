@@ -14,7 +14,9 @@ type Feed struct {
 	FeedLink    string  `json:"feed_link"`
 	Icon        *[]byte `json:"icon,omitempty"`
 	HasIcon     bool    `json:"has_icon"`
+	DefaultView string  `json:"default_view"`
 }
+
 
 func (s *Storage) CreateFeed(title, description, link, feedLink string, folderId *int64) *Feed {
 	if title == "" {
@@ -76,6 +78,11 @@ func (s *Storage) UpdateFeedLink(feedId int64, newLink string) bool {
 	return err == nil
 }
 
+func (s *Storage) UpdateFeedDefaultView(feedId int64, defaultView string) bool {
+	_, err := s.db.Exec(`update feeds set default_view = ? where id = ?`, defaultView, feedId)
+	return err == nil
+}
+
 func (s *Storage) UpdateFeedIcon(feedId int64, icon *[]byte) bool {
 	_, err := s.db.Exec(`update feeds set icon = ? where id = ?`, icon, feedId)
 	return err == nil
@@ -85,7 +92,7 @@ func (s *Storage) ListFeeds() []Feed {
 	result := make([]Feed, 0)
 	rows, err := s.db.Query(`
 		select id, folder_id, title, description, link, feed_link,
-		       ifnull(length(icon), 0) > 0 as has_icon
+		       ifnull(length(icon), 0) > 0 as has_icon, ifnull(default_view, '') as default_view
 		from feeds
 		order by title collate nocase
 	`)
@@ -103,6 +110,7 @@ func (s *Storage) ListFeeds() []Feed {
 			&f.Link,
 			&f.FeedLink,
 			&f.HasIcon,
+			&f.DefaultView,
 		)
 		if err != nil {
 			log.Print(err)
@@ -148,11 +156,12 @@ func (s *Storage) GetFeed(id int64) *Feed {
 	err := s.db.QueryRow(`
 		select
 			id, folder_id, title, link, feed_link,
-			icon, ifnull(icon, '') != '' as has_icon
+			icon, ifnull(icon, '') != '' as has_icon,
+			ifnull(default_view, '') as default_view
 		from feeds where id = ?
 	`, id).Scan(
 		&f.Id, &f.FolderId, &f.Title, &f.Link, &f.FeedLink,
-		&f.Icon, &f.HasIcon,
+		&f.Icon, &f.HasIcon, &f.DefaultView,
 	)
 	if err != nil {
 		if err != sql.ErrNoRows {

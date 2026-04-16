@@ -381,6 +381,19 @@ func (s *Server) handleFeed(c *router.Context) {
 				s.db.UpdateFeedLink(id, link.(string))
 			}
 		}
+		if dv, ok := body["default_view"]; ok {
+			if dv == nil {
+				s.db.UpdateFeedDefaultView(id, "")
+			} else if str, ok := dv.(string); ok {
+				switch str {
+				case "", "readability", "original":
+					s.db.UpdateFeedDefaultView(id, str)
+				default:
+					c.JSON(http.StatusBadRequest, map[string]string{"error": "invalid default_view"})
+					return
+				}
+			}
+		}
 		c.Out.WriteHeader(http.StatusOK)
 	} else if c.Req.Method == "DELETE" {
 		s.db.DeleteFeed(id)
